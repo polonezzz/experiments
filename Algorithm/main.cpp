@@ -13,6 +13,7 @@
 #include "algo.h"
 #include "bst.h"
 #include "graph.h"
+#include "misc.h"
 #include "number.h"
 #include "sorting.h"
 
@@ -20,6 +21,7 @@ using namespace std;
 
 int wmain(int argc, wchar_t* argv[])
 {
+	
 	mt19937 gen(random_device{}());
 	uniform_int<uint32_t> udis(0, 100);
 

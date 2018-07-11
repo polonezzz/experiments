@@ -20,6 +20,4 @@ void quicksort(It begin, It end)
 	return f.get();
 }
 
-// Implement an algorithm to determine if a string has all unique characters
-bool isCharsUnique(std::wstring str);
 
