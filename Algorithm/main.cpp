@@ -21,10 +21,20 @@ using namespace std;
 
 int wmain(int argc, wchar_t* argv[])
 {
-	
 	mt19937 gen(random_device{}());
-	uniform_int<uint32_t> udis(0, 100);
+	uniform_int<uint32_t> udis(0, 99);
 
+	const size_t N = 4;
+	uint32_t m[N][N];
+	for (auto& row : m)
+		for (auto& item : row)
+			item = udis(gen);
+	printMatrix(m);
+	rotateMatrix2(m, true);
+	printMatrix(m);
+	rotateMatrix2(m, false);
+	printMatrix(m);
+	
 	unordered_set<uint32_t> us;
 	auto bcount = us.bucket_count();
 	us.max_load_factor(13.0);
