@@ -1,6 +1,8 @@
 
 #include "number.h"
 
+#include <tuple>
+
 uint32_t gcdEuclid(uint32_t a, uint32_t b)
 {
 	while (b != 0)
@@ -28,6 +30,22 @@ uint32_t gcdEuclid2(uint32_t a, uint32_t b)
 	return a;
 }
 
+std::tuple<int32_t, int32_t, int32_t> gcdEuclidEx(int32_t a, int32_t b)
+{
+	// ax + by = d
+	// http://e-maxx.ru/algo/export_extended_euclid_algorithm
+	
+	int32_t d = a;
+	int32_t x = 1;
+	int32_t y = 0;
+	
+	if (b == 0)
+		return std::make_tuple(d, x, y);
+
+	std::tie(d, x, y) = gcdEuclidEx(b, a % b);
+	
+	return std::make_tuple(d, y, x - a / b * y);
+}
 
 std::vector<size_t> sieve(size_t limit)  // of Eratosthenes
 {
@@ -95,7 +113,7 @@ int phi(int n)  //Euler's function
 	   ≈сли p Ч простое число, то phi(p) = p - 1 (любое число, кроме самого p, взаимно просто с ним.)
 	   
 	   ≈сли p Ч простое, a Ч натуральное число, то phi(p^a) = p^a - p^(a-1) 
-		(числом p^a не взаимно просты только числа вида pk (k \in \mathcal{N}), которых p^a / p = p^{a-1} штук.)
+		(числом p^a не взаимно просты только числа вида pk (k in {N}), которых p^a / p = p^{a-1} штук.)
 
 	   ≈сли a и b взаимно простые, то phi(ab) = phi(a) * phi(b) ("мультипликативность" функции Ёйлера). 
 	    (следует из китайской теоремы об остатках)

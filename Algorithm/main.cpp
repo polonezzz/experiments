@@ -1,8 +1,8 @@
 #include "stdafx.h"
 
+#include <bitset>
 #include <cassert>
 #include <cmath>
-#include <bitset>
 #include <iomanip>
 #include <iostream>
 #include <queue>
@@ -21,10 +21,40 @@ using namespace std;
 
 int wmain(int argc, wchar_t* argv[])
 {
+	uint32_t a = 9167368, b = 3;
+	uint32_t d = 0;
+	int32_t x = 0;
+	int32_t y = 0;
+	
+	std::tie(d, x, y) =	gcdEuclidEx(a, b);
+	assert(a*x + b*y == d);
+	
+	std::tie(d, x, y) =	gcdEuclidEx(b, a);
+	assert(b*x + a*y == d);
+	
+	std::tie(d, x, y) =	gcdEuclidEx(b, 0);
+	assert(b*x == d);
+	
+
 	mt19937 gen(random_device{}());
 	uniform_int<uint32_t> udis(0, 99);
 
-	const size_t N = 4;
+	forward_list<uint32_t> list;
+	for (size_t i = 0; i < 20; ++i)
+		list.push_front(udis(gen) % 5);
+
+	for (auto i : list)
+		std::cout << std::setw(2) << i;
+	std::cout << '\n';
+
+	/**/
+
+	for (auto i : list)
+		std::cout << std::setw(2) << i;
+	std::cout << '\n';
+
+	const size_t M = 6, N = 5;
+/*
 	uint32_t m[N][N];
 	for (auto& row : m)
 		for (auto& item : row)
@@ -34,7 +64,15 @@ int wmain(int argc, wchar_t* argv[])
 	printMatrix(m);
 	rotateMatrix2(m, false);
 	printMatrix(m);
-	
+*/	
+	uint32_t m2[M][N];
+	for (auto& row : m2)
+		for (auto& item : row)
+			item = udis(gen) % 5;
+	printMatrix(m2);
+	zeroMatrix(m2);
+	printMatrix(m2);
+		
 	unordered_set<uint32_t> us;
 	auto bcount = us.bucket_count();
 	us.max_load_factor(13.0);
