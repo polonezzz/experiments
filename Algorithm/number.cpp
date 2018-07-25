@@ -47,6 +47,19 @@ std::tuple<int32_t, int32_t, int32_t> gcdEuclidEx(int32_t a, int32_t b)
 	return std::make_tuple(d, y, x - a / b * y);
 }
 
+std::tuple<bool, int32_t, int32_t> linearDiophant(int32_t a, int32_t b, int32_t c)
+{
+	int32_t d = 0;
+	int32_t x = 0;
+	int32_t y = 0;
+	
+	std::tie(d, x, y) = gcdEuclidEx(a, b);
+	if (c % d)
+		return std::make_tuple(false, 0, 0);
+	else
+		return std::make_tuple(true, x * c / d, y * c / d);
+}
+
 std::vector<size_t> sieve(size_t limit)  // of Eratosthenes
 {
 	std::vector<size_t> primes;

@@ -13,6 +13,7 @@
 #include "algo.h"
 #include "bst.h"
 #include "graph.h"
+#include "list.h"
 #include "misc.h"
 #include "number.h"
 #include "sorting.h"
@@ -21,38 +22,72 @@ using namespace std;
 
 int wmain(int argc, wchar_t* argv[])
 {
-	uint32_t a = 9167368, b = 3;
-	uint32_t d = 0;
-	int32_t x = 0;
-	int32_t y = 0;
-	
-	std::tie(d, x, y) =	gcdEuclidEx(a, b);
-	assert(a*x + b*y == d);
-	
-	std::tie(d, x, y) =	gcdEuclidEx(b, a);
-	assert(b*x + a*y == d);
-	
-	std::tie(d, x, y) =	gcdEuclidEx(b, 0);
-	assert(b*x == d);
-	
-
 	mt19937 gen(random_device{}());
-	uniform_int<uint32_t> udis(0, 99);
+	uniform_int<uint32_t> udis(0, 10);
 
-	forward_list<uint32_t> list;
-	for (size_t i = 0; i < 20; ++i)
-		list.push_front(udis(gen) % 5);
+	auto a = createList({9u,6u,6u,5u});
+	auto b = createList({8u,2u,6u});
 
-	for (auto i : list)
-		std::cout << std::setw(2) << i;
-	std::cout << '\n';
+	auto print = [](auto node) { std::cout << node->data; };
+	traverseList(a, print);
+	a = reverseList(a);
 
-	/**/
+	std::cout << " + "; 
 
-	for (auto i : list)
-		std::cout << std::setw(2) << i;
-	std::cout << '\n';
+	traverseList(b, print);
+	b = reverseList(b);
 
+	std::cout << " = "; 
+
+	auto i = a;
+	auto j = b;
+	
+	decltype(a) c = nullptr;
+	uint32_t carry = 0;
+
+	while (i && j)
+	{
+		auto k = new ListItem<uint32_t>();
+		k->data = i->data + j->data + carry;
+		carry = k->data / 10;
+		k->data %= 10;
+				
+		k->next = c;
+		c = k;	
+
+		i = i->next;
+		j = j->next;
+	}
+
+	if (!i)
+		i = j;
+
+	while (carry)
+	{
+		auto k = new ListItem<uint32_t>();
+		
+		if (i)
+		{
+			k->data = (i->data + carry) % 10;
+			carry = (i->data + carry) / 10;
+			i = i->next;
+		}
+		else
+		{
+			k->data = carry;
+			carry = 0;
+		}
+
+		k->next = c;
+		c = k;	
+	}
+
+	traverseList(c, print);
+
+	for (auto list : {a, b, c})
+		deleteList(list);
+	
+	
 	const size_t M = 6, N = 5;
 /*
 	uint32_t m[N][N];
@@ -130,60 +165,26 @@ int wmain(int argc, wchar_t* argv[])
 
 	quicksort(data.begin(), data.end());
 	
-	//auto r = sieve(121);
-	//r = sieve(1000000);
+	/*
+	auto r = sieve(121);
+	r = sieve(1000000);
 	
 	cout << "197 is " << (isPrime(197) ? "prime\n" : "not prime\n"); 
-
-	/*
-	cout << "1 is " << (isPrime(1) ? "prime\n" : "not prime\n"); 
-	cout << "2 is " << (isPrime(2) ? "prime\n" : "not prime\n"); 
-	cout << "47 is " << (isPrime(47) ? "prime\n" : "not prime\n"); 
-	cout << "121 is " << (isPrime(121) ? "prime\n" : "not prime\n"); 
 	cout << "1 000 001 is " << (isPrime(1000001) ? "prime\n" : "not prime\n"); 
-	*/
-
-	
 	cout << "gcd(1, 1) = " << gcdEuclid(1, 1) <<'\n';
 	cout << "gcd(10, 6) = " << gcdEuclid(10, 6) <<'\n';
 	cout << "gcd(23, 13) = " << gcdEuclid(23, 13) <<'\n';
 	cout << "gcd(573, 456) = " << gcdEuclid(573, 456) <<'\n';
 	cout << "gcd(31415, 14142) = " << gcdEuclid(31415, 14142) <<'\n';
-	cout << "gcd(0, 2) = " << gcdEuclid(0, 2) <<'\n';
-	cout << "gcd(0, 0) = " << gcdEuclid(0, 0) <<'\n';
-
-	cout << "gcd(1, 1) = " << gcdEuclid2(1, 1) <<'\n';
-	cout << "gcd(10, 6) = " << gcdEuclid2(6, 10) <<'\n';
-	cout << "gcd(23, 13) = " << gcdEuclid2(13, 23) <<'\n';
-	cout << "gcd(573, 456) = " << gcdEuclid2(456, 573) <<'\n';
-	cout << "gcd(31415, 14142) = " << gcdEuclid2(14142, 31415) <<'\n';
-	cout << "gcd(0, 2) = " << gcdEuclid2(0, 2) <<'\n';
-	cout << "gcd(0, 0) = " << gcdEuclid2(0, 0) <<'\n';
-
-
-	/*
-	cout << "sqrtFloor(1) = " << sqrtFloor(1) <<'\n';
 	cout << "sqrtFloor(2) = " << sqrtFloor(2) <<'\n';
 	cout << "sqrtFloor(4) = " << sqrtFloor(4) <<'\n';
-	cout << "sqrtFloor(6) = " << sqrtFloor(6) <<'\n';
-	cout << "sqrtFloor(121) = " << sqrtFloor(121) <<'\n';
-	cout << "sqrtFloor(1000) = " << sqrtFloor(1000) <<'\n';
-	cout << "sqrtFloor(1002) = " << sqrtFloor(1002) <<'\n';
 	cout << "sqrtFloor(45) = " << sqrtFloor(45) <<'\n';
-	*/
-
-	/*
 	cout << "sqrt of 12.25 = " << setprecision(numeric_limits<double>::digits10) << sqrtHero(12.25) << '\n';
 	cout << "sqrt of 47.5 = " << setprecision(numeric_limits<double>::digits10) << sqrtHero(47.5) << '\n';
-	cout << "sqrt of 49 = " << setprecision(numeric_limits<double>::digits10) << sqrtHero(49) << '\n';
-	cout << "sqrt of 65535 = " << setprecision(numeric_limits<double>::digits10) << sqrtHero(0xFFFF) << '\n';
-	cout << "sqrt of 65536 = " << setprecision(numeric_limits<double>::digits10) << sqrtHero(0x10000) << '\n';
-	cout << "sqrt of 125348 = " << setprecision(numeric_limits<double>::digits10) << sqrtHero(125348) << '\n';
 	*/
 
 	//int vol =  waterFill({2, 5, 1, 4, 6, 4, 7, 7, 6});
 	
-
 	return 0;
 }
 

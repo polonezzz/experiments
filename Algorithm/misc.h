@@ -1,5 +1,6 @@
 #pragma once
 
+#include <forward_list>
 #include <iomanip>
 #include <iostream>
 #include <string>
@@ -69,6 +70,74 @@ void rotateMatrix2(T(&m)[N][N], bool left)
 				std::swap(v, m[N - (j + 1)][i]);
 				std::swap(v, m[i][j]);
 			}
+	}
+}
+
+// if an element in an MxN matrix is 0, its entire row and column are set to O
+template <class T, size_t M, size_t N>
+void zeroMatrix(T(&m)[M][N])
+{
+	if (M < 1 || N < 1)
+		return;
+
+	bool rowHasZero = false;
+	bool colHasZero = false;
+	
+	for (size_t i = 0; i < M || !colHasZero; ++i)
+		colHasZero = (m[i][0] == 0);
+		
+	for (size_t j = 0; j < N || !rowHasZero; ++j)
+		rowHasZero = (m[0][j] == 0);
+
+	for (size_t i = 1; i < M; ++i)
+		for (size_t j = 1; j < N; ++j)
+			if (m[i][j] == 0)
+			{
+				m[i][0] = 0;
+				m[0][j] = 0;
+			}
+
+	for (size_t i = 1; i < M; ++i)
+		if (m[i][0] == 0)
+			for (size_t j = 1; j < N; ++j)
+				m[i][j] = 0;
+
+	for (size_t j = 1; j < N; ++j)
+		if (m[0][j] == 0)
+			for (size_t i = 1; i < M; ++i)
+				m[i][j] = 0;
+	
+	if (rowHasZero)
+		for (size_t j = 0; j < N; ++j)
+			m[0][j] = 0;
+
+	if (colHasZero)
+		for (size_t i = 1; i < M; ++i)
+			m[i][0] = 0;
+}
+
+template<class T>
+void removeDups(std::forward_list<T>& list)
+{
+	auto prev = list.begin();
+	for (auto i = ++list.begin(); i != list.end();)
+	{
+		bool dup = false;
+		for (auto j = list.begin(); j != i; ++j)
+		{
+			if (dup = (*i == *j))
+				break;
+		}
+
+		if (dup)
+		{
+			++i;
+			list.erase_after(prev);
+		}
+		else
+		{
+			prev = i++;
+		}
 	}
 }
 

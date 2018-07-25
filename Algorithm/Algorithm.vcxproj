@@ -148,6 +148,7 @@
     <ClInclude Include="algo.h" />
     <ClInclude Include="bst.h" />
     <ClInclude Include="graph.h" />
+    <ClInclude Include="list.h" />
     <ClInclude Include="misc.h" />
     <ClInclude Include="number.h" />
     <ClInclude Include="sorting.h" />
