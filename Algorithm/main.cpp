@@ -25,81 +25,8 @@ int wmain(int argc, wchar_t* argv[])
 	mt19937 gen(random_device{}());
 	uniform_int<uint32_t> udis(0, 10);
 
-	auto a = createList({9u,6u,6u,5u});
-	auto b = createList({8u,2u,6u});
-
-	auto print = [](auto node) { std::cout << node->data; };
-	traverseList(a, print);
-	a = reverseList(a);
-
-	std::cout << " + "; 
-
-	traverseList(b, print);
-	b = reverseList(b);
-
-	std::cout << " = "; 
-
-	auto i = a;
-	auto j = b;
-	
-	decltype(a) c = nullptr;
-	uint32_t carry = 0;
-
-	while (i && j)
-	{
-		auto k = new ListItem<uint32_t>();
-		k->data = i->data + j->data + carry;
-		carry = k->data / 10;
-		k->data %= 10;
-				
-		k->next = c;
-		c = k;	
-
-		i = i->next;
-		j = j->next;
-	}
-
-	if (!i)
-		i = j;
-
-	while (carry)
-	{
-		auto k = new ListItem<uint32_t>();
-		
-		if (i)
-		{
-			k->data = (i->data + carry) % 10;
-			carry = (i->data + carry) / 10;
-			i = i->next;
-		}
-		else
-		{
-			k->data = carry;
-			carry = 0;
-		}
-
-		k->next = c;
-		c = k;	
-	}
-
-	traverseList(c, print);
-
-	for (auto list : {a, b, c})
-		deleteList(list);
-	
-	
 	const size_t M = 6, N = 5;
-/*
-	uint32_t m[N][N];
-	for (auto& row : m)
-		for (auto& item : row)
-			item = udis(gen);
-	printMatrix(m);
-	rotateMatrix2(m, true);
-	printMatrix(m);
-	rotateMatrix2(m, false);
-	printMatrix(m);
-*/	
+
 	uint32_t m2[M][N];
 	for (auto& row : m2)
 		for (auto& item : row)
@@ -165,23 +92,33 @@ int wmain(int argc, wchar_t* argv[])
 
 	quicksort(data.begin(), data.end());
 	
-	/*
+/*	
 	auto r = sieve(121);
 	r = sieve(1000000);
 	
+	int32_t d = 1, x = 0, y = 0;
+	std::tie(d,x,y) = gcdEuclidEx2(1, 1);
+	std::tie(d,x,y) = gcdEuclidEx2(10, 6);
+	std::tie(d,x,y) = gcdEuclidEx2(23, 13);
+	std::tie(d,x,y) = gcdEuclidEx2(46, 240);
+	std::tie(d,x,y) = gcdEuclidEx2(573, 456);
+	std::tie(d,x,y) = gcdEuclidEx2(31415, 14142);
+
 	cout << "197 is " << (isPrime(197) ? "prime\n" : "not prime\n"); 
 	cout << "1 000 001 is " << (isPrime(1000001) ? "prime\n" : "not prime\n"); 
+	
 	cout << "gcd(1, 1) = " << gcdEuclid(1, 1) <<'\n';
 	cout << "gcd(10, 6) = " << gcdEuclid(10, 6) <<'\n';
 	cout << "gcd(23, 13) = " << gcdEuclid(23, 13) <<'\n';
 	cout << "gcd(573, 456) = " << gcdEuclid(573, 456) <<'\n';
 	cout << "gcd(31415, 14142) = " << gcdEuclid(31415, 14142) <<'\n';
+	
 	cout << "sqrtFloor(2) = " << sqrtFloor(2) <<'\n';
 	cout << "sqrtFloor(4) = " << sqrtFloor(4) <<'\n';
 	cout << "sqrtFloor(45) = " << sqrtFloor(45) <<'\n';
 	cout << "sqrt of 12.25 = " << setprecision(numeric_limits<double>::digits10) << sqrtHero(12.25) << '\n';
 	cout << "sqrt of 47.5 = " << setprecision(numeric_limits<double>::digits10) << sqrtHero(47.5) << '\n';
-	*/
+*/	
 
 	//int vol =  waterFill({2, 5, 1, 4, 6, 4, 7, 7, 6});
 	

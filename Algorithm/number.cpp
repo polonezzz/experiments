@@ -32,9 +32,8 @@ uint32_t gcdEuclid2(uint32_t a, uint32_t b)
 
 std::tuple<int32_t, int32_t, int32_t> gcdEuclidEx(int32_t a, int32_t b)
 {
-	// ax + by = d
 	// http://e-maxx.ru/algo/export_extended_euclid_algorithm
-	
+
 	int32_t d = a;
 	int32_t x = 1;
 	int32_t y = 0;
@@ -45,6 +44,38 @@ std::tuple<int32_t, int32_t, int32_t> gcdEuclidEx(int32_t a, int32_t b)
 	std::tie(d, x, y) = gcdEuclidEx(b, a % b);
 	
 	return std::make_tuple(d, y, x - a / b * y);
+}
+
+std::tuple<int32_t, int32_t, int32_t> gcdEuclidEx2(int32_t a, int32_t b)
+{
+	// 	https://en.wikipedia.org/wiki/Extended_Euclidean_algorithm 
+	
+	int32_t s1 = 1, s2 = 0;
+	int32_t t1 = 0, t2 = 1;
+	
+	if (b == 0)
+		return std::make_tuple(a, s1, s2);
+	else if (a == 0)
+		return std::make_tuple(b, t1, t2);
+
+	do
+	{
+		auto q = a / b;
+		auto r = a % b;
+		a = b;
+		b = r;
+
+		auto s = s1 - q*s2;
+		s1 = s2;
+		s2 = s;
+
+		auto t = t1 - q*t2;
+		t1 = t2;
+		t2 = t;
+
+	} while (b);
+
+	return std::make_tuple(a, s1, t1);
 }
 
 std::tuple<bool, int32_t, int32_t> linearDiophant(int32_t a, int32_t b, int32_t c)
