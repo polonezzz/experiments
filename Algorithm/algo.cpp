@@ -60,3 +60,4 @@ double sqrtHero(double a, double precision)
 	//cout << '\n';
 	return x;
 }
+

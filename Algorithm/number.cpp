@@ -186,3 +186,22 @@ int phi(int n)  //Euler's function
 		result -= result / n;
 	return result;
 }
+
+
+
+uint64_t binaryExp(uint32_t num, uint32_t exp)		// right to left
+{
+	if (num < 2)
+		return num;
+
+	uint64_t res = 1;
+	uint64_t k = num;
+	do
+	{
+		res *= (exp % 2 ? k : 1);
+		k = k * k;
+		
+	} while (exp /= 2);
+
+	return res;
+}

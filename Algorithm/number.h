@@ -1,5 +1,6 @@
 #pragma once
 
+#include <bitset>
 #include <vector>
 
 uint32_t gcdEuclid(uint32_t a, uint32_t b);
@@ -18,3 +19,5 @@ size_t sqrtFloor(size_t a);
 bool isPrime(size_t number);
 
 int phi(int n);  //Euler's function
+
+uint64_t binaryExp(uint32_t num, uint32_t exp);

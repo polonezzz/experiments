@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <future>
+#include <stack>
 #include <string>
 
 template <typename It>
@@ -52,3 +53,31 @@ void bubbleSort(It begin, It end, Pred pred)		//random access iterators
 	} 
 }
 
+template<typename T, typename Pred>
+void sortingStack(std::stack<T>& s, Pred pred)
+{
+	if (s.size() < 2)
+		return;
+
+	std::stack<T> temp;
+	
+	while (!s.empty())
+	{
+		auto i = s.top();
+		s.pop();
+
+		while (!temp.empty())
+		{
+			auto j = temp.top();
+			if (!pred(j, i))
+				break;
+			
+			temp.pop();
+			s.push(j);
+		}
+
+		temp.push(i);
+	}
+
+	s.swap(temp);
+}
