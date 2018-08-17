@@ -71,12 +71,16 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>e:\boost\;$(IncludePath)</IncludePath>
+    <LibraryPath>e:\boost\stage\lib\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>e:\boost\;$(IncludePath)</IncludePath>
+    <LibraryPath>E:\boost\stage\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -147,6 +151,7 @@
   <ItemGroup>
     <ClInclude Include="algo.h" />
     <ClInclude Include="bst.h" />
+    <ClInclude Include="geometry.h" />
     <ClInclude Include="graph.h" />
     <ClInclude Include="list.h" />
     <ClInclude Include="misc.h" />
@@ -157,6 +162,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="algo.cpp" />
+    <ClCompile Include="geometry.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="graph.cpp" />
     <ClCompile Include="misc.cpp" />

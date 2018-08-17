@@ -12,6 +12,7 @@
 
 #include "algo.h"
 #include "bst.h"
+#include "geometry.h"
 #include "graph.h"
 #include "list.h"
 #include "misc.h"
@@ -20,10 +21,27 @@
 
 using namespace std;
 
+
 int wmain(int argc, wchar_t* argv[])
 {
+	std::vector<Point2D> pts = {{-5,0}, {0, 5}, {0, -5}, {0, -5}, {5,0},{5,0}};
+    auto isCircle = pointsMakeCircle(pts);
+
+	std::vector<Point2D> pts2 = {{-5,0}, {0, 5}, {-2, 0}, {4, 0}, {5,0}, {7,0}};
+	isCircle = pointsMakeCircle(pts2);
+
 	mt19937 gen(random_device{}());
-	uniform_int<uint32_t> udis(0, 10);
+	uniform_int<uint32_t> udis(0, 100);
+
+	stack<uint32_t> s;
+	for (size_t i = 0; i < 20; ++i)
+		s.push(udis(gen));
+
+	//sortingStack(s, greater<uint32_t>());
+	sortingStack(s, less<uint32_t>());
+	//sortingStack(s, greater_equal<uint32_t>());
+
+	s.top();
 
 	const size_t M = 6, N = 5;
 
