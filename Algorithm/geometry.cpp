@@ -8,15 +8,16 @@ int Compare(double a, double b)
 	return std::isless(abs(a - b), 1e-3) ? 0 : (std::signbit(diff) ? -1 : 1);
 }
 
-LinearEquation::LinearEquation(const Point2D& lhs, const Point2D& rhs)
+LinearEquation::LinearEquation(const Point2D& pt1, const Point2D& pt2)
 {
-			
+	A = IsEqual(pt2.y, pt1.y) ? 0.0 : pt2.y - pt1.y;
+	B = IsEqual(pt2.x, pt1.x) ? 0.0 : pt1.x - pt2.x;
+	C = - (A * pt1.x + B * pt1.y);
 }
 
-LinearEquation LinearEquation::GetNormal()
+LinearEquation LinearEquation::GetNormal(const Point2D& pt)
 {
-	// TO-DO: real normal
-	return LinearEquation(A,B,C);   
+	return LinearEquation(-B, A, B * pt.x - A * pt.y);   
 }
 
 bool LinearEquation::valid() const
@@ -58,52 +59,13 @@ bool pointsMakeCircle(const std::vector<Point2D>& points)
 	if (pts.size() < 3)
 		return true;
 
-	/*
-		Ax + By + C = 0
-		y = ax + b
-		a = -A / B
-		b = -C / B
-	*/
-
 	size_t i = 0;
-	double A = 0, B = 0, C = 0;
-
-	/* TO-DO: wrap into LinearEquation::GetNormal() */
-	if (IsEqual(pts[i+1].y, pts[i].y))
-	{
-		A = 1;
-		B = 0;
-		C = -(pts[i+1].x + pts[i].x) / 2;
-	}
-	else
-	{
-		A = (pts[i+1].x - pts[i].x)/(pts[i+1].y - pts[i].y);
-		B = 1;
-		C = -(std::pow(pts[i+1].x, 2) - std::pow(pts[i].x, 2) + std::pow(pts[i+1].y, 2) - std::pow(pts[i].y, 2)) / (2 * (pts[i+1].y - pts[i].y));		
-	}
-	
-	LinearEquation eq(A, B, C);
+	auto eq = LinearEquation(pts[i+1], pts[i]).GetNormal({(pts[i+1].x + pts[i].x) / 2, (pts[i+1].y + pts[i].y) / 2});
 
 	++i;
-	/*  TO-DO:
-		if  pts[i+1] belongs eq then return false;
-	*/
-
-	/* TO-DO: wrap into LinearEquation::GetNormal() */
-	if (IsEqual(pts[i+1].y, pts[i].y))
-	{
-		A = 1;
-		B = 0;
-		C = -(pts[i+1].x + pts[i].x) / 2;		
-	}
-	else
-	{
-		A = (pts[i+1].x - pts[i].x)/(pts[i+1].y - pts[i].y);
-		B = 1;
-		C = -(std::pow(pts[i+1].x, 2) - std::pow(pts[i].x, 2) + std::pow(pts[i+1].y, 2) - std::pow(pts[i].y, 2)) / (2 * (pts[i+1].y - pts[i].y));
-	}	
+	auto eq2 = LinearEquation(pts[i+1], pts[i]).GetNormal({(pts[i+1].x + pts[i].x) / 2, (pts[i+1].y + pts[i].y) / 2});
 	
-	auto pt = eq.intersectPoint({A, B, C});
+	auto pt = eq2.intersectPoint(eq);
 
 	if (!pt)
 		return false;

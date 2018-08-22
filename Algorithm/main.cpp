@@ -24,11 +24,19 @@ using namespace std;
 
 int wmain(int argc, wchar_t* argv[])
 {
+/*
 	std::vector<Point2D> pts = {{-5,0}, {0, 5}, {0, -5}, {0, -5}, {5,0},{5,0}};
     auto isCircle = pointsMakeCircle(pts);
 
 	std::vector<Point2D> pts2 = {{-5,0}, {0, 5}, {-2, 0}, {4, 0}, {5,0}, {7,0}};
 	isCircle = pointsMakeCircle(pts2);
+*/
+	std::vector<Point2D> pts3 = {{1,0}, {5,0}, {7,0}};
+	auto isCircle = pointsMakeCircle(pts3);
+
+	std::vector<Point2D> pts4 = {{0,0}, {0,4}, {0,8}};
+	isCircle = pointsMakeCircle(pts4);
+
 
 	mt19937 gen(random_device{}());
 	uniform_int<uint32_t> udis(0, 100);

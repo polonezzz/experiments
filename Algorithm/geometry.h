@@ -39,9 +39,9 @@ public:
 	LinearEquation(double a, double b, double c) : A(a), B(b), C(c) 
 	{}
 
-	LinearEquation(const Point2D& lhs, const Point2D& rhs);
+	LinearEquation(const Point2D& pt1, const Point2D& pt2);
 	
-	LinearEquation GetNormal();
+	LinearEquation GetNormal(const Point2D& pt);
 
 	boost::optional<Point2D> intersectPoint(const LinearEquation& eq);
 
