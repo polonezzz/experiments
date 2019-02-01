@@ -147,3 +147,7 @@ bool isCharsUnique(std::wstring str);
 bool isPalindrome(const std::wstring& str);
 
 void towersOfHanoi(size_t from, size_t to, size_t mid, size_t count);
+
+void grayCode(int n);
+
+void generateGrayCode(/*size_t size*/);

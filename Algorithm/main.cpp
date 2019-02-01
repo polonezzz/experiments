@@ -5,8 +5,14 @@
 #include <cmath>
 #include <iomanip>
 #include <iostream>
+#include <iterator>
+#include <map>
+#include <numeric>
 #include <queue>
 #include <random>
+#include <sstream>
+#include <string>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
@@ -18,12 +24,116 @@
 #include "misc.h"
 #include "number.h"
 #include "sorting.h"
+#include "trie.h"
 
 using namespace std;
+/*
+template <typename T, typename ...Ts>
+auto concat(T t, Ts ...ts)
+{
+		return [=](auto ...parameters)
+		{
+			if (sizeof...(ts) > 1)
+				return t(concat(ts...)(parameters...));
+			else
+				return t(parameters...);
+		};
+}
+*/
+/*
+template <typename ...Ts>
+int add(Ts ...ts)
+{
+	return int(0 + (ts + ...));	
+}
+*/
+
+template <typename T>
+auto filter(T predicate)
+{
+    return [=] (auto reduce_fn) 
+	{
+        return [=] (auto accumulator, auto input) 
+		{
+            if (predicate(input)) 
+			{
+                return reduce_fn(accumulator, input);
+            } 
+			else 
+			{
+                return accumulator;
+            }
+        };
+    };
+}
+
+template <typename T>
+auto map(T fn)
+{
+    return [=] (auto reduce_fn) 
+	{
+        return [=] (auto accumulator, auto input) 
+		{
+            return reduce_fn(accumulator, fn(input));
+        };
+    };
+}
 
 
 int wmain(int argc, wchar_t* argv[])
 {
+	Trie<string> trie;
+	for (string s : {"how do you do", "how do you", "how do they", "how does he", "how do"})
+	{
+		istringstream iss(s);
+		trie.insert(istream_iterator<string>(iss), istream_iterator<string>());
+	}
+	
+	for (string s : {"how do", "how do you do", "how do", "how do they", "how do you", "how does he"})
+	{
+		trie.print();
+		std::cout << "------------------------------------\n";
+
+		istringstream iss(s);
+		trie.remove(istream_iterator<string>(iss), istream_iterator<string>());
+	}
+
+	std::istream_iterator<int> it {std::cin};
+    std::istream_iterator<int> end_it;
+
+    auto even  ([](int i) { return i % 2 == 0; });
+    auto twice ([](int i) { return i * 2; });
+
+    auto copy_and_advance ([](auto it, auto input) 
+	{
+        *it = input;
+        return ++it;
+    });
+
+    std::accumulate(it, end_it,
+            std::ostream_iterator<int>{std::cout, ", "},
+            filter(even)(::map(twice)(copy_and_advance)));
+    std::cout << '\n';
+	
+	const size_t n = 4;
+	uint8_t m[4][4]{ {1,0,0,0}, {0,0,1,0}, {1,0,1,0}, {0,1,0,0}};
+	
+	for (size_t k = 0; k < n; ++k)
+		for (size_t i = 0; i < n; ++i)
+			for (size_t j = 0; j < n; ++j)
+				m[i][j] |= m[i][k] & m[k][j];
+	
+	generateGrayCode();
+
+	unordered_map<string, uint8_t> um {{"0001"s, 1}, {"0010"s, 2}, {"0011"s, 3}};
+	um.emplace("0111"s, 7);
+
+	auto rb = make_reverse_iterator(end(um));
+	auto re = make_reverse_iterator(begin(um));
+
+	for (auto it = rb; it != re; ++it)
+		std::cout << (*it).first << endl;;
+
 /*
 	std::vector<Point2D> pts = {{-5,0}, {0, 5}, {0, -5}, {0, -5}, {5,0},{5,0}};
     auto isCircle = pointsMakeCircle(pts);

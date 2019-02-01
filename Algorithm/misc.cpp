@@ -3,6 +3,10 @@
 
 #include "misc.h"
 
+#include <array>
+#include <bitset>
+#include <stack>
+
 bool _isCharsUnique(std::wstring& str)
 {
 	if (str.empty() || str.length() == 1)
@@ -86,4 +90,91 @@ void towersOfHanoi(size_t from, size_t to, size_t mid, size_t count)
 	towersOfHanoi(mid, to, from, count - 1);
 	
 	return;
+}
+
+void towersOfHanoi(size_t count)
+{
+/*	
+	std::array<std::stack<size_t>, 3> ss;
+	for (auto i = count; i > 0; --i)
+		ss[0].push(i);
+
+	uint8_t idx = 2;
+
+	while (!ss[0].empty())
+	{
+		ss[idx].push(ss[0].top());
+		ss[0].pop();
+		idx ^= 3;
+
+		while (!ss[idx].empty())
+		{
+			auto min
+		}
+	}
+*/
+	
+	size_t from = 1, mid = 2, to = 3;
+	if (count < 2)
+	{
+		printf("%u : %u -> %u\n", count, from, to);
+		return;
+	}
+
+	towersOfHanoi(from, mid, to, count - 1);
+	printf("%u : %u -> %u\n", count, from, to);
+	towersOfHanoi(mid, to, from, count - 1);
+	
+	return;
+}
+
+void grayCode(int n)
+{
+	for (int k = 1 << n; --k >= 0;)
+	{
+		int s = k ^ (k >> 1);
+		
+		for (int i = 0; i < n; i++) 
+			printf("%d", (s >> i) & 1);
+		printf("\n");
+	}
+}
+
+
+void generateGrayCode(/*const size_t size*/)
+{
+	const size_t size = 4;
+	std::bitset<size> bits;
+
+	auto Gray = [&bits, size](auto gray, auto rgray, size_t k) -> void
+	{
+		if (k == size + 1)
+		{
+			std::cout << bits << std::endl;
+		}
+		else
+		{
+			bits.reset(k);
+			gray(gray, rgray, k + 1);
+			bits.set(k);
+			rgray(gray, rgray, k + 1);
+		}
+	};
+
+	auto RGray = [&bits, size](auto gray, auto rgray, size_t k) -> void
+	{
+		if (k == size + 1)
+		{
+			std::cout << bits << std::endl;
+		}
+		else
+		{
+			bits.set(k);
+			gray(gray, rgray, k + 1);
+			bits.reset(k);
+			rgray(gray, rgray, k + 1);
+		}
+	};
+
+	Gray(Gray, RGray, 1);
 }
