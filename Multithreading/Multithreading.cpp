@@ -4,8 +4,12 @@
 
 #include <array>
 #include <algorithm>
+
+#define _ENABLE_ATOMIC_ALIGNMENT_FIX
 #include <atomic>
+
 #include <chrono>
+#include <complex>
 #include <condition_variable>
 #include <cstdio>
 #include <exception>
@@ -18,6 +22,7 @@
 #include <memory>
 #include <mutex>
 #include <numeric>
+#include <sstream>
 #include <thread>
 #include <unordered_set>
 #include <utility>
@@ -25,6 +30,8 @@
 
 #include "InterlockedSingleList.h"
 #include "Templates.h"
+
+using namespace std;
 
 void ListCPUCacheInfo()
 {
@@ -246,13 +253,90 @@ void read_y_then_x()
 		++z;
 }
 
+
+using namespace chrono_literals;
+
+struct pcout : public stringstream
+{
+	static inline mutex cout_mutex;
+
+	~pcout()
+	{
+		lock_guard<mutex> l{ cout_mutex };
+		cout << rdbuf();
+		cout.flush();
+	}
+};
+
+static string create(const char* s)
+{
+	pcout{} << "3s CREATE " << quoted(s) << '\n';
+	this_thread::sleep_for(3s);
+	return { s };
+}
+
+static string concat(const string& a, const string& b)
+{
+	pcout{} << "5s CONCAT "
+		<< quoted(a) << " "
+		<< quoted(b) << '\n';
+	this_thread::sleep_for(5s);
+	return a + b;
+}
+
+static string twice(const string& s)
+{
+	pcout{} << "3s TWICE  " << quoted(s) << '\n';
+	this_thread::sleep_for(3s);
+	return s + s;
+}
+
+template <typename F, typename ...T>
+static auto asynchronize(F f, T...xs)
+{
+	return [=]()
+	{
+		return async(launch::async, f, xs...);
+	};
+}
+
+template <typename F, typename ...T>
+static auto async_adapter(F f, T...xs)
+{
+	//c
+	return [=]()
+	{
+		return async(launch::async, [f](auto ... xs) { return f(xs.get()...); } , xs()...);
+	};
+}
+
+
 int main()
 {
-	{	
-		std::thread a(write_x_then_y);
-		std::thread b(read_y_then_x);
+	thread::hardware_concurrency();
+	{
+		auto result = async_adapter(concat,
+			async_adapter(twice, async_adapter(concat, asynchronize(create, "foo "), asynchronize(create, "bar "))),
+			async_adapter(concat, asynchronize(create, "this "), asynchronize(create, "that ")));
+
+		cout << "Setup done. Nothing executed yet.\n";
+
+		cout << result().get() << '\n';
+	//}
+	
+	//{	
+		thread a(write_x_then_y);
+		thread b(read_y_then_x);
 		a.join();
 		b.join();
+				
+		thread c;
+		c = thread(result);
+		c.join();
+		c = thread(result);
+		c.join();
+		
+
 		assert(z.load() != 0);
 
 		// atomics
@@ -383,7 +467,7 @@ int main()
 		catch (const std::future_error& ex) { std::cout << ex.what(); }
 	}
 */
-/*
+
 	{
 		std::once_flag flag;
 
@@ -400,7 +484,7 @@ int main()
 		
 		return 0;
 	}
-*/	
+	
 /*
 	{
 		auto f = [](std::thread t) { return t.join(); };

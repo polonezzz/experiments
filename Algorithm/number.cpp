@@ -38,6 +38,21 @@ std::tuple<int32_t, int32_t, int32_t> gcdEuclidEx(int32_t a, int32_t b)
 	int32_t x = 1;
 	int32_t y = 0;
 	
+	/*
+		a*x + b*y = gcd(a,b)
+		if b = 0 => a = gcd(a,b), x = 1, y = 0
+		
+		else suppose we have solution for
+		b*x1 + r*y1 = gcd(b,r) where r = a - (a div b) * b  
+
+		b*x1 + [a - (a div b) * b]*y1 = 
+		b*x1 + a*y1 - (a div b)*b*y1 = 
+		a*y1 + b*[x1 - (a div b)*y1] = gcd(b,r) = gcd(a,b) =>
+
+		x = y1, y = x1 - (a div b)*y1
+	
+	*/
+
 	if (b == 0)
 		return std::make_tuple(d, x, y);
 

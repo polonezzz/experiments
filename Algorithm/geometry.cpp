@@ -79,3 +79,16 @@ bool pointsMakeCircle(const std::vector<Point2D>& points)
 
 	return std::all_of(pts.begin() + 3, pts.end(), [distance, &radiusSqr](const auto& pt) { return IsEqual(distance, radiusSqr(pt)); });
 }
+
+
+
+Quaternion rotateQ(Quaternion p, Quaternion axis, double angle)
+{
+	auto n = boost::math::norm(p);
+	auto c = std::cos(angle / 2);
+	auto f = std::sin(angle / 2) / n;
+
+	Quaternion q(c, f * axis.R_component_2(), f * axis.R_component_3(), f * axis.R_component_4());
+
+	return q * p * conj(q);
+}

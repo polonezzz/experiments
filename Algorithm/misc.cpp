@@ -94,37 +94,9 @@ void towersOfHanoi(size_t from, size_t to, size_t mid, size_t count)
 
 void towersOfHanoi(size_t count)
 {
-/*	
-	std::array<std::stack<size_t>, 3> ss;
-	for (auto i = count; i > 0; --i)
-		ss[0].push(i);
-
-	uint8_t idx = 2;
-
-	while (!ss[0].empty())
-	{
-		ss[idx].push(ss[0].top());
-		ss[0].pop();
-		idx ^= 3;
-
-		while (!ss[idx].empty())
-		{
-			auto min
-		}
-	}
-*/
-	
 	size_t from = 1, mid = 2, to = 3;
-	if (count < 2)
-	{
-		printf("%u : %u -> %u\n", count, from, to);
-		return;
-	}
+	towersOfHanoi(from, mid, to, count);
 
-	towersOfHanoi(from, mid, to, count - 1);
-	printf("%u : %u -> %u\n", count, from, to);
-	towersOfHanoi(mid, to, from, count - 1);
-	
 	return;
 }
 

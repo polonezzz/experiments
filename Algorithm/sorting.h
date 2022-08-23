@@ -53,6 +53,13 @@ void bubbleSort(It begin, It end, Pred pred)		//random access iterators
 	} 
 }
 
+template <typename It, typename Pred>
+void insertSort(It begin, It end, Pred pred)		//random access iterators
+{
+	for (auto i = begin; i != end; ++i)
+		std::rotate(std::upper_bound(begin, i, *i, pred), i, i + 1);
+}
+
 template<typename T, typename Pred>
 void sortingStack(std::stack<T>& s, Pred pred)
 {

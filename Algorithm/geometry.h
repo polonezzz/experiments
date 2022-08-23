@@ -1,8 +1,13 @@
 #pragma once
 
-#include <boost\optional.hpp>
+
 #include <cmath>
 #include <vector>
+
+#include <boost\optional.hpp>
+#include <boost\math\quaternion.hpp>
+
+using Quaternion = boost::math::quaternion<double>;
 
 int Compare(double a, double b);
 
@@ -52,3 +57,5 @@ private:
 };
 
 bool pointsMakeCircle(const std::vector<Point2D>& pts);
+
+Quaternion rotateQ(Quaternion p, Quaternion axis, double angle);

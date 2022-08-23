@@ -1,20 +1,27 @@
 #include "stdafx.h"
 
+#include <algorithm>
 #include <bitset>
 #include <cassert>
+#include <chrono>
 #include <cmath>
+#include <execution>
 #include <iomanip>
 #include <iostream>
 #include <iterator>
 #include <map>
+#include <memory>
 #include <numeric>
 #include <queue>
 #include <random>
+#include <set>
 #include <sstream>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+
+#include <experimental\string>
 
 #include "algo.h"
 #include "bst.h"
@@ -68,7 +75,7 @@ auto filter(T predicate)
 }
 
 template <typename T>
-auto map(T fn)
+auto fold(T fn)
 {
     return [=] (auto reduce_fn) 
 	{
@@ -79,9 +86,142 @@ auto map(T fn)
     };
 }
 
+class A
+{
+public:
+	virtual int bar(int x)
+	{
+		return x*10;
+	}
+};
+
+class B : public A
+{
+	int bar (int x)
+	{
+		return x*100;
+	}
+};
+
+struct C
+{
+	int num;
+	string name;
+
+	C(int a, string b) : num(a), name(move(b)) {}
+};
+
+void f(int n)
+{
+    std::this_thread::sleep_for(std::chrono::seconds(n));
+    std::cout << "thread " << n << " ended" << '\n';
+}
+
+template <typename Policy>
+void executionPolicy(Policy policy)
+{
+	using namespace std::chrono;
+	vector<uint32_t> data{ 100000000 };
+	
+	auto tstart = high_resolution_clock::now();
+	
+	for (size_t i = 0; i < 100000; ++i)
+	{
+		generate(policy, begin(data), end(data), [gen = mt19937{ random_device{}() }, dist = uniform_int_distribution<uint32_t>{ 0, 1000000 }]() mutable { return dist(gen); });
+		sort(policy, begin(data), end(data));
+	}
+	
+	auto tend = high_resolution_clock::now();
+	cout << duration_cast<milliseconds>(tend - tstart).count() <<" - ";
+}
 
 int wmain(int argc, wchar_t* argv[])
 {
+	{
+		// make push pop heap
+
+		array<int, 10> a = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+		array<int, 10> ra;
+
+		copy(rbegin(a), rend(a), begin(ra));
+
+		make_heap(begin(a), end(a));
+		pop_heap(begin(a), end(a));
+		*(end(a) - 1) = -1;
+		push_heap(begin(a), end(a));
+		
+		make_heap(begin(ra), end(ra));
+		sort_heap(begin(ra), end(ra));
+		
+		;
+	}
+	
+	{
+		auto reduce_fn = [](auto a, auto x) {return a + x; };
+		auto even([](int i) { return i % 2 == 0; });
+		auto twice([](int i) { return i * 2; });
+
+		std::istream_iterator<int> it{ std::cin };
+		std::istream_iterator<int> end_it;
+
+		auto copy_and_advance([](auto it, auto input)
+			{
+				*it = input;
+				return ++it;
+			});
+
+		std::accumulate(it, end_it,
+			std::ostream_iterator<int>{std::cout, ", "},
+			filter(even)(::fold(twice)(copy_and_advance)));
+		std::cout << '\n';
+	}
+	
+	auto res =  rotateQ(Quaternion(0, 1, 0, 0), Quaternion(0, 0, 1, 0), - std::_Pi / 4);
+	
+	{
+		for (size_t i = 0; i < 20; ++i)
+		{
+			executionPolicy(execution::seq);
+			executionPolicy(execution::par);
+			cout << '\n';
+		}
+	}
+
+	{
+		auto p = make_shared<C>(13, "askjdlasdj");
+		auto ps = shared_ptr<string>(p, &p->name);
+
+		p->name = "123123";
+		//auto pn = make_shared<int>(p, &p->num);
+	}
+
+
+	using hours = chrono::duration<double, chrono::hours::period>;
+	auto hh = chrono::duration_cast<hours>(chrono::minutes(15));
+	{
+		std::ostringstream local;
+		auto cout_buff = std::cout.rdbuf(); // save pointer to std::cout buffer
+		std::cout.rdbuf(local.rdbuf()); // substitute internal std::cout buffer with
+		std::cout << "some message";
+
+		// go back to old buffer
+		std::cout.rdbuf(cout_buff);
+	}
+	
+	std::vector<std::thread> v;
+    v.emplace_back(f, 1);
+    v.emplace_back(f, 2);
+    v.emplace_back(f, 3);
+    std::list<std::thread> l;
+    // copy() would not compile, because std::thread is noncopyable
+ 
+    std::move(v.begin(), v.end(), std::back_inserter(l)); 
+    for (auto& t : l) t.join();
+	
+	auto b = bind(&A::bar, placeholders::_2, 5);
+	B xx;
+	b(1, xx, 1, 2,1);
+	
 	Trie<string> trie;
 	for (string s : {"how do you do", "how do you", "how do they", "how does he", "how do"})
 	{
@@ -89,6 +229,20 @@ int wmain(int argc, wchar_t* argv[])
 		trie.insert(istream_iterator<string>(iss), istream_iterator<string>());
 	}
 	
+	string sdata;
+	//do
+	//{
+		sdata.clear();
+		ostringstream os(sdata);
+
+		getline(cin, sdata);
+		//std::copy(istream_iterator<string>(cin), istream_iterator<string>(), ostream_iterator<string>(os, " "));
+
+		istringstream is(sdata);
+		if (auto sub = trie.subtrie(istream_iterator<string>(is), istream_iterator<string>()))
+			sub->get().print();
+	//} while (!sdata.empty());
+			
 	for (string s : {"how do", "how do you do", "how do", "how do they", "how do you", "how does he"})
 	{
 		trie.print();
@@ -97,23 +251,7 @@ int wmain(int argc, wchar_t* argv[])
 		istringstream iss(s);
 		trie.remove(istream_iterator<string>(iss), istream_iterator<string>());
 	}
-
-	std::istream_iterator<int> it {std::cin};
-    std::istream_iterator<int> end_it;
-
-    auto even  ([](int i) { return i % 2 == 0; });
-    auto twice ([](int i) { return i * 2; });
-
-    auto copy_and_advance ([](auto it, auto input) 
-	{
-        *it = input;
-        return ++it;
-    });
-
-    std::accumulate(it, end_it,
-            std::ostream_iterator<int>{std::cout, ", "},
-            filter(even)(::map(twice)(copy_and_advance)));
-    std::cout << '\n';
+	
 	
 	const size_t n = 4;
 	uint8_t m[4][4]{ {1,0,0,0}, {0,0,1,0}, {1,0,1,0}, {0,1,0,0}};
@@ -151,15 +289,15 @@ int wmain(int argc, wchar_t* argv[])
 	mt19937 gen(random_device{}());
 	uniform_int<uint32_t> udis(0, 100);
 
-	stack<uint32_t> s;
+	stack<uint32_t> st;
 	for (size_t i = 0; i < 20; ++i)
-		s.push(udis(gen));
+		st.push(udis(gen));
 
 	//sortingStack(s, greater<uint32_t>());
-	sortingStack(s, less<uint32_t>());
+	sortingStack(st, less<uint32_t>());
 	//sortingStack(s, greater_equal<uint32_t>());
 
-	s.top();
+	st.top();
 
 	const size_t M = 6, N = 5;
 

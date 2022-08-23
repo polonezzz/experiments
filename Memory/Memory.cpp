@@ -7,6 +7,7 @@
 
 #include <exception>
 #include <iostream>
+#include <memory>
 
 #pragma comment(lib, "psapi.lib")
 

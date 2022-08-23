@@ -1,7 +1,10 @@
 #pragma once
 
 #include <map>
+#include <type_traits>
 #include <utility>
+
+#include <boost/optional.hpp>
 
 template<typename T>
 class Trie
@@ -11,16 +14,19 @@ class Trie
 
 public:
 
+	typedef boost::optional<std::reference_wrapper<Trie<T>>> Subtrie;
+
 	template<typename It>
 	void insert(It begin, It end);
 
 	template<typename It>
 	bool remove(It begin, It end);
 
+	template<typename It>
+	Subtrie subtrie(It begin, It end);
+
 	void print(/*std::basic_ostream<>*/) const;
 	
-	//subtrie with optional
-
 private:
 	void print(/*std::basic_ostream<>*/ std::vector<T>& data) const;
 
@@ -62,6 +68,20 @@ bool Trie<T>::remove(It begin, It end)
 	}
 
 	return ret;
+}
+
+template<typename T>
+template<typename It>
+typename Trie<T>::Subtrie Trie<T>::subtrie(It begin, It end)
+{
+	if (begin == end)
+		return ref(*this);
+
+	auto child = tries.find(*begin);
+	if (child == tries.end())
+		return {};
+
+	return child->second.subtrie(next(begin), end);
 }
 
 template<typename T>
