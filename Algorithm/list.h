@@ -116,6 +116,9 @@ void ForwardList<T>::for_each(Func func)
 }
 
 
+
+
+
 /*
 template <typename T>
 ListItem<T>* insertAfter(ListItem<T>* node, const T& val)
