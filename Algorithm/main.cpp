@@ -138,6 +138,52 @@ void executionPolicy(Policy policy)
 int wmain(int argc, wchar_t* argv[])
 {
 	{
+		auto f = [](auto node) { std::cout << node->GetValue() << " "; return; };
+
+		ForwardList<uint16_t> l;
+
+		l.create({ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
+		l.for_each(f);
+		std::cout << '\n';
+
+		auto p = l.front();
+
+		/*
+		removeAfter(removeAfter(head));
+		traverseList(head, f);
+		std::cout << '\n';
+
+		auto node = insertAfter(insertAfter(head, 11), 10);
+		traverseList(head, f);
+		std::cout << '\n';
+		*/
+		l.reverse();
+		l.for_each(f);
+		std::cout << '\n';
+	}
+
+	
+	{
+		Graph g(9);
+		g.addEdge(0, 1);
+		g.addEdge(0, 3);
+		g.addEdge(1, 3);
+		g.addEdge(3, 4);
+		g.addEdge(4, 2);
+		g.addEdge(2, 5);
+		g.addEdge(1, 6);
+		g.addEdge(2, 6);
+		g.addEdge(7, 8);
+		g.addEdge(5, 5);
+	
+		auto ret = DFS(g, 0, 2);
+		ret = DFS(g, 7, 8);
+		ret = DFS(g, 1, 8);
+		ret = DFS(g, 5, 5);
+
+	}
+	
+	{
 		// make push pop heap
 
 		array<int, 10> a = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
@@ -318,17 +364,6 @@ int wmain(int argc, wchar_t* argv[])
 
 	for (size_t i = 0; i < 100; ++i)
 		us.insert(udis(gen));
-
-/*
-	Graph g(6);
-	g.addEdge(0, 1);
-	g.addEdge(0, 3);
-	g.addEdge(1, 3);
-	g.addEdge(3, 4);
-	g.addEdge(4, 2);
-	g.addEdge(2, 5);
-	shortestPath(g, 0, 5);
-*/	
 	
 //	phi(5*7*11*11);
 	

@@ -2,9 +2,11 @@
 
 #include <vector>
 
+using namespace std;
+
 class Graph
 {
-	std::vector<std::vector<size_t>> data;
+	vector<vector<size_t>> data;
 
 	bool isExist(size_t vertex) const
 	{
@@ -21,8 +23,10 @@ public:
 	void addEdge(size_t from, size_t to);
 	void removeEdge(size_t from, size_t to);
 
-	const std::vector<size_t>& operator[](size_t v) const;
+	const vector<size_t>& operator[](size_t v) const;
 };
+
+vector<size_t> DFS(const Graph& graph, size_t from, size_t to);
 
 void shortestPath(const Graph& graph, size_t from, size_t to);
 
