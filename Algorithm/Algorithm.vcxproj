@@ -167,7 +167,6 @@
   <ItemGroup>
     <ClCompile Include="algo.cpp" />
     <ClCompile Include="geometry.cpp" />
-    <ClCompile Include="list.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="graph.cpp" />
     <ClCompile Include="misc.cpp" />

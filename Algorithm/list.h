@@ -20,33 +20,106 @@ public:
 template <typename T>
 class ForwardList
 {
-	using Node = typename ForwardListNode<T>;
-	Node* head = nullptr;
-
 public:
+	using Node = typename ForwardListNode<T>;
+	
+	ForwardList() = default;
+
+	ForwardList(const ForwardList& other)
+	{
+		auto id = [](auto a) { return a; };
+
+		auto temp = other.map(id);
+		std::swap(fakeHead, temp.fakeHead);
+	}
+	
+	ForwardList& operator=(const ForwardList& other)
+	{
+		auto temp = other;
+		std::swap(fakeHead, temp.fakeHead);
+		return *this;
+	}
+
+	ForwardList(ForwardList&& other) noexcept
+	{
+		fakeHead = other.fakeHead;
+		other.head = nullptr;
+	}
+	
+	ForwardList& operator=(ForwardList&& other) noexcept
+	{
+		auto temp = std::move(other);
+		std::swap(fakeHead, temp.fakeHead);
+		return *this;
+	}
+
+	~ForwardList() 
+	{ 
+		clear(); 
+	}
+
 	void create(const std::initializer_list<T>& args);
 	void clear();
 	void reverse();
 	
-	template<typename Func>
-	void for_each(Func func);
+	template<typename Functor>
+	ForwardList<T> map(Functor f) const;
 
+	Node* before_begin() { return &fakeHead; }
 	Node* front() { return head; };
 	
 	void push_front(const T& value);
 	void pop_front();
 	
-	//insert_after, return inserted ptr
-	//erase_after, return following the erased
-	//before_begin fake ptr
-	// merge
+	Node* insert_after(Node* node, const T& val);
+	Node* erase_after(Node* node);
+	
+	template<typename Compare>
+	void merge(ForwardList<T>& other, Compare comp);
 
-	//how the sort and unique works in std::forward_list?
+	template<typename Compare>
+	ForwardList<T> set_union(const ForwardList<T>& other, Compare comp) const;    // elements of this + ones of other not in this
+
+	template<typename Compare>
+	ForwardList<T> set_intersection(const ForwardList<T>& other, Compare comp) const;
+
+	template<typename Compare>
+	ForwardList<T> set_difference(const ForwardList<T>& other, Compare comp) const;
+	
+	template<typename Compare>
+	ForwardList<T> set_symmetric_difference(const ForwardList<T>& other, Compare comp) const;
+	
+	/*
+	template<typename Compare>
+	void includes(ForwardList<T>& other, Compare comp);  //true if other is a subsequence of this, otherwise false.
+
+	how the sort and unique works in std::forward_list?
+	*/
+
+	void print(const std::wstring& delim = L" ");
+
+private:
+	Node fakeHead;
+	Node*& head = fakeHead.next;
+
+	Node* copy_tail_after(Node* dest, Node* src)
+	{
+		while (src)
+		{
+			dest = insert_after(dest, src->data);
+			src = src->next;
+		}
+
+		return dest;
+	}
+
 };
 
 template <typename T>
 void ForwardList<T>::create(const std::initializer_list<T>& args)
 {
+	clear();
+
 	for (auto it = rbegin(args); it != rend(args); ++it)
 		push_front(*it);
 
@@ -62,6 +135,24 @@ void ForwardList<T>::clear()
 		head = head->next;
 		delete node;
 	}
+}
+
+template <typename T>
+void ForwardList<T>::print(const std::wstring& delim)
+{
+	if (!head)
+	{
+		std::wcout << L"<empty>\n";
+		return;
+	}
+
+	auto node = head;
+	while (node)
+	{
+		std::wcout << node->data << delim;
+		node = node->next;
+	}
+	std::wcout << L'\n';
 }
 
 template <typename T>
@@ -90,37 +181,41 @@ void ForwardList<T>::reverse()
 	if (!(head && head->next))
 		return;
 
-	auto node = head;
-	while (head->next)
+	Node* prev = nullptr;
+	while (head)
 	{
 		auto temp = head->next;
-		head->next = head->next->next;
-		temp->next = node;
-		node = temp;
+		head->next = prev;
+		prev = head;
+		head = temp;
 	}
 
-	head = node;
+	head = prev;
+	
 	return;
 }
 
 template <typename T>
-template <typename Func>
-void ForwardList<T>::for_each(Func func)
+template<typename Functor>
+ForwardList<T> ForwardList<T>::map(Functor f) const
 {
+	ForwardList<T> newList;
+	auto newNode = newList.before_begin();
+
 	auto node = head;
 	while (node)
 	{
-		func(node);
+		newNode = newList.insert_after(newNode, f(node->data));
 		node = node->next;
 	}
+
+	return newList;
 }
 
-
-/*
 template <typename T>
-ListItem<T>* insertAfter(ListItem<T>* node, const T& val)
+typename ForwardList<T>::Node* ForwardList<T>::insert_after(typename ForwardList<T>::Node* node, const T& val)
 {
-	auto newNode = new ListItem<T>();
+	auto newNode = new Node;
 	newNode->data = val;
 
 	if (node)
@@ -137,15 +232,184 @@ ListItem<T>* insertAfter(ListItem<T>* node, const T& val)
 }
 
 template <typename T>
-ListItem<T>* removeAfter(ListItem<T>* node)
+typename ForwardList<T>::Node* ForwardList<T>::erase_after(typename ForwardList<T>::Node* node)
 {
+	Node* res = nullptr;
+
 	if (node && node->next)
 	{
 		auto oldNode = node->next;
-		node->next = oldNode->next;
+		res = oldNode->next;
+		node->next = res;
 		delete oldNode;
 	}
 
-	return node;
+	return res;
 }
-*/
+
+template <typename T>
+template <typename Compare>
+void ForwardList<T>::merge(ForwardList<T>& other, Compare comp)
+{
+	ForwardList<T> temp;
+	auto node = temp.before_begin();
+
+	while (head && other.head)
+	{
+		if (comp(other.head->data, head->data))
+		{
+			node->next = other.head;
+			other.head = other.head->next;
+		}
+		else
+		{
+			node->next = head;
+			head = head->next;
+		}
+
+		node = node->next;
+	}
+
+	if (other.head)
+	{
+		node->next = other.head;
+		other.head = nullptr;
+	}
+	else
+	{
+		node->next = head;
+	}
+
+	fakeHead = temp.fakeHead;
+	temp.head = nullptr;
+}
+
+template <typename T>
+template <typename Compare>
+ForwardList<T> ForwardList<T>::set_union(const ForwardList<T>& other, Compare comp) const
+{
+	ForwardList<T> res;
+	auto node = res.before_begin();
+
+	auto lhs = head;
+	auto rhs = other.head;
+
+	while (lhs && rhs)
+	{
+		if (comp(rhs->data, lhs->data))
+		{
+			node = res.insert_after(node, rhs->data);
+			rhs = rhs->next;
+		}
+		else if (!comp(lhs->data, rhs->data))
+		{
+			rhs = rhs->next;
+		}
+		else
+		{
+			node = res.insert_after(node, lhs->data);
+			lhs = lhs->next;
+		}
+	}
+
+	res.copy_tail_after(res.copy_tail_after(node, lhs), rhs);
+	return res;
+}
+
+
+template <typename T>
+template <typename Compare>
+ForwardList<T> ForwardList<T>::set_intersection(const ForwardList<T>& other, Compare comp) const
+{
+	ForwardList<T> res;
+	auto node = res.before_begin();
+
+	auto lhs = head;
+	auto rhs = other.head;
+
+	while (lhs && rhs)
+	{
+		if (comp(rhs->data, lhs->data))
+		{
+			rhs = rhs->next;
+		}
+		else if (comp(lhs->data, rhs->data))
+		{
+			lhs = lhs->next;
+		}
+		else
+		{
+			node = res.insert_after(node, lhs->data);
+			lhs = lhs->next;
+			rhs = rhs->next;
+		}
+	}
+
+	return res;
+}
+
+template <typename T>
+template <typename Compare>
+ForwardList<T> ForwardList<T>::set_difference(const ForwardList<T>& other, Compare comp) const
+{
+	ForwardList<T> res;
+	auto node = res.before_begin();
+
+	auto lhs = head;
+	auto rhs = other.head;
+
+	while (lhs && rhs)
+	{
+		if (comp(rhs->data, lhs->data))
+		{
+			rhs = rhs->next;
+		}
+		else if (!comp(lhs->data, rhs->data))
+		{
+			lhs = lhs->next;
+			rhs = rhs->next;
+		}
+		else
+		{
+			node = res.insert_after(node, lhs->data);
+			lhs = lhs->next;
+		}
+	}
+
+	res.copy_tail_after(node, lhs);
+	return res;
+}
+
+
+template <typename T>
+template <typename Compare>
+ForwardList<T> ForwardList<T>::set_symmetric_difference(const ForwardList<T>& other, Compare comp) const
+{
+	ForwardList<T> res;
+	auto node = res.before_begin();
+
+	auto lhs = head;
+	auto rhs = other.head;
+
+	while (lhs && rhs)
+	{
+		if (comp(rhs->data, lhs->data))
+		{
+			node = res.insert_after(node, rhs->data);
+			rhs = rhs->next;
+		}
+		else if (!comp(lhs->data, rhs->data))
+		{
+			lhs = lhs->next;
+			rhs = rhs->next;
+		}
+		else
+		{
+			node = res.insert_after(node, lhs->data);
+			lhs = lhs->next;
+		}
+	}
+
+	res.copy_tail_after(res.copy_tail_after(node, lhs), rhs);
+	return res;
+}

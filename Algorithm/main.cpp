@@ -138,28 +138,39 @@ void executionPolicy(Policy policy)
 int wmain(int argc, wchar_t* argv[])
 {
 	{
-		auto f = [](auto node) { std::cout << node->GetValue() << " "; return; };
+		auto less = [](auto a, auto b) { return a < b; };
+		
+		ForwardList<int16_t> l;
+		l.create({ 0, 2, 4, 6, 8 });
+		l.print();
 
-		ForwardList<uint16_t> l;
+		ForwardList<int16_t> m;
+		m.create({ 1, 2, 3, 5, 7, 9, 9, 9 });
+		m.print();
+		auto l2 = l.set_union(m, less);
+		l2.print();
+		
+		m.create({ 1, 3, 7, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 10, 10, 10});
+		auto l3 = m;
+		m.print();
+		
+		l2 = l2.set_symmetric_difference(m, less);
+		l2.print();
+		l2.set_symmetric_difference(m, less).print();   // == l2
+		
+		l2.set_intersection(l3, less).print();
+		l2.set_difference(l3, less).print();
 
-		l.create({ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
-		l.for_each(f);
-		std::cout << '\n';
+		l.insert_after(l.before_begin(), -1);
+		l.insert_after(l.before_begin(), -2);
+		l.erase_after(l.insert_after(l.before_begin(), -3));
+		l.print();
 
-		auto p = l.front();
-
-		/*
-		removeAfter(removeAfter(head));
-		traverseList(head, f);
-		std::cout << '\n';
-
-		auto node = insertAfter(insertAfter(head, 11), 10);
-		traverseList(head, f);
-		std::cout << '\n';
-		*/
 		l.reverse();
-		l.for_each(f);
-		std::cout << '\n';
+		l.print();
+
+		l.insert_after(l.erase_after(l.before_begin()), 11);
+		l.print();
 	}
 
 	
