@@ -39,7 +39,14 @@ std::tuple<int32_t, int32_t, int32_t> gcdEuclidEx(int32_t a, int32_t b)
 	int32_t y = 0;
 	
 	/*
-		a*x + b*y = gcd(a,b)
+		Bezout's identity : Let a and b be integers with greatest common divisor d. 
+		Then there exist integers x and y such that ax + by = d. 
+		Moreover, the integers of the form az + bt are exactly the multiples of d.
+
+		Proof : https://en.wikipedia.org/wiki/B%C3%A9zout%27s_identity#Proof
+
+		ax + by = gcd(a,b)
+
 		if b = 0 => a = gcd(a,b), x = 1, y = 0
 		
 		else suppose we have solution for
@@ -113,23 +120,23 @@ std::vector<size_t> sieve(size_t limit)  // of Eratosthenes
 	if (limit < 2)
 		return primes; 
 
-	std::vector<bool> data(limit + 1);
-	data[0] = data[1] = true;
+	std::vector<bool> data(limit + 1, true);
+	data[0] = data[1] = false;
 
 	size_t n = 2;
 	while (n * n <= limit)
 	{
-		if (!data[n])
+		if (data[n])
 		{
 			for (size_t i = n * n; i <= limit; i += n)
-				data[i] = true;
+				data[i] = false;
 		}
 
 		++n;
 	}
 	
 	for (size_t i = 0; i < data.size(); ++i)
-		if (!data[i])
+		if (data[i])
 			primes.push_back(i);		
 	
 	return primes;
