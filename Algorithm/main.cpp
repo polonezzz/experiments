@@ -175,7 +175,7 @@ int wmain(int argc, wchar_t* argv[])
 
 	
 	{
-		Graph g(9);
+		DirectedGraph g(9);
 		g.addEdge(0, 1);
 		g.addEdge(0, 3);
 		g.addEdge(1, 3);
@@ -185,13 +185,56 @@ int wmain(int argc, wchar_t* argv[])
 		g.addEdge(1, 6);
 		g.addEdge(2, 6);
 		g.addEdge(7, 8);
-		g.addEdge(5, 5);
+		//g.addEdge(5, 5);
 	
-		auto ret = DFS(g, 0, 2);
-		ret = DFS(g, 7, 8);
-		ret = DFS(g, 1, 8);
-		ret = DFS(g, 5, 5);
+		auto ret = g.DFS(0, 2);
+		
+		ret = g.DFS(2, 3);
+		g.addEdge(2, 1);
+		ret = g.DFS(2, 3);
+		g.removeEdge(2, 1);
+		ret = g.DFS(2, 3);
 
+		ret = g.DFS(7, 8);
+		ret = g.DFS(1, 8);
+		ret = g.DFS(5, 5);
+		
+		ret = g.shortestPath(0, 6);
+		ret = g.shortestPath(0, 4);
+
+		auto dg = g.topologicalSort();
+		auto isDAG = dg.isDAG();
+
+		Graph g2(8);
+		
+		initializer_list<Edge> edges = { 
+			{ 0, 1 }, { 1, 2 }, { 2, 3 }, { 3, 0 },
+			{ 4, 5 }, { 5, 6 }, { 6, 7 }, { 7, 4 },
+			{ 0, 7 }, { 1, 6 }, { 3, 4 }, { 2, 5 },
+			{ 3, 6 }, { 2, 7 }, { 1, 4 }, { 0, 5 } };
+		
+		for (auto e : edges)
+			g2.addEdge(e);
+
+		auto tree = g2.spanningTree();
+
+		enum {A = 0, B, C, D, E, F, G, H, I, J, K};
+		edges = {{ A, B, 7 }, { B, C, 8 }, { A, D, 5 }, { D, B, 9 },
+				 { B, E, 7 }, { C, E, 5 }, { D, E, 15 }, { D, F, 6 },
+				 { E, F, 8 }, { E, G, 9 }, {F, G, 11},
+				 { I, J, 1 }, { K, J, 2 }, { I, K, 2 } };
+		
+		Graph g3(K + 1);
+		for (auto e : edges)
+			g3.addEdge(e);
+
+		tree = g3.kruskal();
+		tree = g3.prim();
+
+		ret = g3.dijkstra(A, G);
+		ret = g3.dijkstra(A, E);
+		ret = g3.dijkstra(C, J);
+		
 	}
 	
 	{
