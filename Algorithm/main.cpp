@@ -176,23 +176,17 @@ int wmain(int argc, wchar_t* argv[])
 	
 	{
 		DirectedGraph g(9);
-		g.addEdge(0, 1);
-		g.addEdge(0, 3);
-		g.addEdge(1, 3);
-		g.addEdge(3, 4);
-		g.addEdge(4, 2);
-		g.addEdge(2, 5);
-		g.addEdge(1, 6);
-		g.addEdge(2, 6);
-		g.addEdge(7, 8);
-		//g.addEdge(5, 5);
+
+		initializer_list<Edge> edges = { { 0, 1 }, { 0, 3 }, { 1, 3 }, { 3, 4 }, { 4, 2 }, 
+										 { 2, 5 }, { 1, 6 }, { 2, 6 }, { 7, 8 } };
+		g.add(edges);
 	
 		auto ret = g.DFS(0, 2);
 		
 		ret = g.DFS(2, 3);
-		g.addEdge(2, 1);
+		g.add({ 2, 1 });
 		ret = g.DFS(2, 3);
-		g.removeEdge(2, 1);
+		g.remove({ 2, 1 });
 		ret = g.DFS(2, 3);
 
 		ret = g.DFS(7, 8);
@@ -203,30 +197,28 @@ int wmain(int argc, wchar_t* argv[])
 		ret = g.shortestPath(0, 4);
 
 		auto dg = g.topologicalSort();
-		auto isDAG = dg.isDAG();
+		auto isDAG = g.isDAG();
 
 		Graph g2(8);
 		
-		initializer_list<Edge> edges = { 
+		edges = { 
 			{ 0, 1 }, { 1, 2 }, { 2, 3 }, { 3, 0 },
 			{ 4, 5 }, { 5, 6 }, { 6, 7 }, { 7, 4 },
 			{ 0, 7 }, { 1, 6 }, { 3, 4 }, { 2, 5 },
 			{ 3, 6 }, { 2, 7 }, { 1, 4 }, { 0, 5 } };
 		
-		for (auto e : edges)
-			g2.addEdge(e);
+		g2.add(edges);
 
 		auto tree = g2.spanningTree();
 
 		enum {A = 0, B, C, D, E, F, G, H, I, J, K};
 		edges = {{ A, B, 7 }, { B, C, 8 }, { A, D, 5 }, { D, B, 9 },
 				 { B, E, 7 }, { C, E, 5 }, { D, E, 15 }, { D, F, 6 },
-				 { E, F, 8 }, { E, G, 9 }, {F, G, 11},
+				 { E, F, 8 }, { E, G, 9 }, { F, G, 11 },
 				 { I, J, 1 }, { K, J, 2 }, { I, K, 2 } };
 		
 		Graph g3(K + 1);
-		for (auto e : edges)
-			g3.addEdge(e);
+		g3.add(edges);
 
 		tree = g3.kruskal();
 		tree = g3.prim();
@@ -234,7 +226,38 @@ int wmain(int argc, wchar_t* argv[])
 		ret = g3.dijkstra(A, G);
 		ret = g3.dijkstra(A, E);
 		ret = g3.dijkstra(C, J);
+
+		DirectedGraph euler(10);
+
+		edges = {
+				{ 0, 1 }, { 1, 2 }, { 2, 3 }, { 3, 4 },
+				{ 4, 5 }, { 5, 6 }, { 6, 0 }, { 0, 5 }, { 2, 9 },
+				{ 0, 2 }, { 2, 5 }, { 2, 7 }, { 7, 8 }, { 8, 9 } 
+		        };
 		
+		for (auto e : edges)
+		{
+			euler.add(e);
+			euler.add({ e.vEnd, e.vBegin, e.weight });
+		}
+		euler.add({ 3, 3 });
+
+		ret = euler.eulerian_cycle();
+		euler.remove({ 0, 5 });
+
+		ret = euler.eulerian_trail();
+
+		DirectedGraph ggg(9);
+		ggg.add({ { 6, 8 }, { 6, 3 }, { 5, 3 }, { 5, 1 }, { 1, 0 }, 
+			      { 1, 2 }, { 0, 4 }, { 2, 4 }, { 3, 7 }, { 8, 7 }, { 7, 4 }});
+		dg = ggg.topologicalSort();
+		
+		ret = ggg.eulerian_trail(); 
+
+		ggg.remove({ 0, 1 });
+		ret = ggg.eulerian_trail();
+		ggg.remove({ 0, 1 });
+
 	}
 	
 	{

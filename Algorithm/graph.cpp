@@ -11,47 +11,49 @@
 
 #include <cassert>
 
-bool Graph::addEdge(size_t from, size_t to, size_t weight)
+void Graph::addEdge(size_t from, size_t to, size_t weight)
 {
-	try
-	{
-		auto& adjFrom = adjacent.at(from);
-		auto& adjTo = adjacent.at(to);
+	adjacent.at(from).push_front({ to, weight });
+	++degree[to];
+	adjacent.at(to).push_front({ from, weight });
+	++degree[from];
 
-		if (std::find(adjFrom.begin(), adjFrom.end(), to) == adjFrom.end())
-		{
-			adjFrom.push_front({ to, weight });
-			++degree[to];
-			adjTo.push_front({ from, weight });
-			++degree[from];
-		}
-
-		return true;
-	}
-	catch (const out_of_range&)
-	{
-		return false;
-	}
+	return;
 }
 
-bool Graph::removeEdge(size_t from, size_t to)
+ bool Graph::remove_vertex(AdjacentCont& list, size_t v)
 {
-	try
-	{
-		auto& adjFrom = adjacent.at(from);
-		auto& adjTo = adjacent.at(to);
+	bool res = false;
 
-		adjFrom.remove(to);
+	auto prev = list.before_begin();
+	auto curr = prev;
+	++curr;
+
+	while (curr != list.end())
+	{
+		if (res = (curr->vertex == v))
+		{
+			list.erase_after(prev);
+			curr = list.end();
+		}
+		else
+		{
+			prev = curr++;
+		}
+	}
+
+	return res;
+};
+
+
+void Graph::removeEdge(size_t from, size_t to)
+{
+	if (remove_vertex(adjacent.at(from), to))
 		--degree[to];
-		adjTo.remove(from);
+	if (remove_vertex(adjacent.at(to), from))
 		--degree[from];
 
-		return true;
-	}
-	catch (const out_of_range&)
-	{
-		return false;
-	}
+	return;
 }
 
 Graph::Path Graph::DFS(size_t from, size_t to) const
@@ -224,7 +226,7 @@ Graph::Path Graph::dijkstra(size_t from, size_t to) const
 	return path;
 }
 
-Graph Graph::spanningTree()
+Graph Graph::spanningTree() const
 {
 	Graph temp(count());
 
@@ -259,7 +261,7 @@ Graph Graph::spanningTree()
 	return temp;
 }
 
-Graph Graph::kruskal()
+Graph Graph::kruskal() const
 {
 	vector<Edge> edges;
 	vector<size_t> colors(count());
@@ -297,7 +299,7 @@ Graph Graph::kruskal()
 	return temp;
 }
 
-Graph Graph::prim()
+Graph Graph::prim() const
 {
 	const auto cnt = count();
 	Graph temp(cnt);
@@ -348,7 +350,7 @@ Graph Graph::prim()
 		else
 		{
 			marked[minEdge.vBegin] = true;
-			temp.addEdge(minEdge);
+			temp.add(minEdge);
 		}
 
 		minEdge = { inf, inf, inf };
@@ -357,46 +359,169 @@ Graph Graph::prim()
 	return temp;
 }
 
-bool DirectedGraph::addEdge(size_t from, size_t to, size_t weight)
+Graph::Path Graph::inner_eulerian_cycle(const Edge& e)
 {
-	try
-	{
-		auto& adj = adjacent.at(from);
+	Path path;
 
-		if (std::find(adj.begin(), adj.end(), to) == adj.end())
+	stack<Edge> st;
+	st.push(e);
+	remove(st.top());
+
+	size_t v = e.vEnd;
+	
+	while (!st.empty())
+	{
+		if (getOutDegree(v))
 		{
-			adj.push_front({ to, weight });
-			++degree[to];
-			++outDegree[from];
-		}
+			auto adj = at(v).front();
+			st.push({ v, adj.vertex, adj.edgeWeigth });
+			remove(st.top());
 
-		return true;
-	}
-	catch (const out_of_range&)
+			v = adj.vertex;
+		}
+		else
+		{
+			auto edge = st.top();
+			path.push_front(edge);
+			st.pop();
+
+			v = edge.vBegin;
+		}
+	} ;
+
+	return path;
+}
+
+bool Graph::check_eulerian_cycle() const
+{
+	size_t i = 0;
+	for (; i < count() && (getDegree(i) % 2 == 0); ++i);
+		
+	return i == count();
+}
+
+Graph::Path Graph::eulerian_cycle()
+{
+	if (!check_eulerian_cycle())
+		return Path();
+	
+	auto temp = copy_this();
+	
+	size_t v = 0;
+	while (v < temp->count() && temp->at(v).empty())   // find first non-isolated vertex
+		++v;
+	
+	if (v == temp->count())
+		return Path();
+
+	auto adj = at(v).front();
+
+	return temp->inner_eulerian_cycle({ v, adj.vertex, adj.edgeWeigth });
+}
+
+Graph::Path Graph::inner_eulerian_trail(const Edge& e)
+{
+	auto temp = copy_this();
+	temp->add(e);
+	auto path = temp->inner_eulerian_cycle(e);
+	if (!path.empty())
+		path.pop_front();
+
+	return path;
+}
+
+Graph::Path Graph::eulerian_trail()
+{
+	vector<size_t> odds;
+	for (size_t i = 0; i < count(); ++i)
+		if (getDegree(i) % 2 == 1)
+			odds.push_back(i);
+	
+	switch (odds.size())
 	{
-		return false;
+	case 0: 
+		return eulerian_cycle();
+
+	case 2:
+		return inner_eulerian_trail({ odds[0], odds[1] });
+		
+	default:
+		return Path();
 	}
 }
 
-bool DirectedGraph::removeEdge(size_t from, size_t to)
+void DirectedGraph::addEdge(size_t from, size_t to, size_t weight)
 {
-	try
-	{
-		auto& adj = adjacent.at(from);
+	adjacent.at(from).push_front({ to, weight });
+	++degree[to];
+	++outDegree[from];
+		
+	return;
+}
 
-		adj.remove(to);
+void DirectedGraph::removeEdge(size_t from, size_t to)
+{
+	if (remove_vertex(adjacent.at(from), to))
+	{
+
 		--degree[to];
 		--outDegree[from];
-
-		return true;
 	}
-	catch (const out_of_range&)
+
+	return;
+}
+
+bool DirectedGraph::check_eulerian_cycle() const
+{
+	size_t i = 0;
+	for (; i < count() && (getInDegree(i) == getOutDegree(i)); ++i);
+
+	return i == count();
+}
+
+DirectedGraph::Path DirectedGraph::eulerian_trail()
+{
+	vector<size_t> odds;
+	for (size_t i = 0; i < count(); ++i)
+		if (getInDegree(i) != getOutDegree(i))
+			odds.push_back(i);
+	
+	switch (odds.size())
 	{
-		return false;
+	case 0:
+		return eulerian_cycle();
+
+	case 2:
+	{
+		//begin: in = out + 1
+		//end  : in = out - 1
+		
+		auto check = [this](auto lhs, auto rhs)
+		{
+			return getInDegree(lhs) == getOutDegree(lhs) + 1
+				&& getInDegree(rhs) == getOutDegree(rhs) - 1;
+		};
+
+		Edge e;
+		if (check(odds[0], odds[1]))
+		{
+			e = { odds[0], odds[1] };
+		}
+		else if (check(odds[1], odds[0]))
+		{
+			e = { odds[1], odds[0] };
+		}
+
+		if (e.vBegin != e.vEnd)
+			return inner_eulerian_trail(e);
+	}
+
+	default:
+		return Path();
 	}
 }
 
-DirectedGraph DirectedGraph::topologicalSort() const
+vector<size_t> DirectedGraph::topologicalSort() const
 {
 	enum class Color
 	{
@@ -407,8 +532,7 @@ DirectedGraph DirectedGraph::topologicalSort() const
 
 	vector<Color> clr(count(), Color::White);
 	vector<size_t> sorted;
-	sorted.reserve(count());
-
+	
 	function<void(size_t)> visit = [&](size_t v)
 	{
 		if (clr[v] == Color::Black)
@@ -418,12 +542,13 @@ DirectedGraph DirectedGraph::topologicalSort() const
 			throw invalid_argument(nullptr);
 
 		clr[v] = Color::Grey;
-		sorted.push_back(v);
-
+		
 		for (const auto& av : at(v))
 			visit(av);
 
 		clr[v] = Color::Black;
+		sorted.push_back(v);
+
 	};
 
 	try
@@ -433,19 +558,26 @@ DirectedGraph DirectedGraph::topologicalSort() const
 	}
 	catch (const invalid_argument&)
 	{
-		return DirectedGraph(0);
+		return vector<size_t>();
 	}
 
+	/*
 	vector<size_t> mapped(sorted.size());
-	for (size_t i = 0; i < sorted.size(); ++i)
-		mapped[sorted[i]] = i;
+	size_t i = 0;
+	while (!sorted.empty())
+	{
+		mapped[sorted.top()] = i++;
+		sorted.pop();
+	}
 
 	DirectedGraph sortedGraph(count());
 	for (size_t i = 0; i < count(); ++i)
 		for (auto j : at(i))
 			sortedGraph.addEdge(mapped[i], mapped[j]);
-
-	return sortedGraph;
+	*/
+	
+	reverse(begin(sorted), end(sorted));
+	return sorted;
 }
 
 

@@ -1,6 +1,8 @@
 #pragma once
 
 #include <forward_list>
+#include <functional>
+#include <memory>
 #include <vector>
 
 using namespace std;
@@ -28,13 +30,13 @@ struct Edge
 	}
 };
 
-
 class Graph
 {
 	size_t cnt = 0;
 
 public:
 	static const size_t inf = size_t(-1);
+	using Path = forward_list<Edge>;
 
 protected:
 	
@@ -63,9 +65,34 @@ protected:
 		return adjacent.at(v);
 	};
 
-public:
-	using Path = forward_list<Edge>;
+	bool remove_vertex(AdjacentCont& list, size_t v);
+	Path inner_eulerian_cycle(const Edge& e);
+	Path inner_eulerian_trail(const Edge& e);
 	
+private:
+	virtual bool check_eulerian_cycle() const;
+	
+	virtual size_t getInDegree(size_t v) const
+	{
+		return getDegree(v);
+	};
+
+	virtual size_t getOutDegree(size_t v) const
+	{
+		return getDegree(v);
+	}
+
+	virtual void addEdge(size_t from, size_t to, size_t weight = inf);
+
+	virtual void removeEdge(size_t from, size_t to);
+
+	virtual unique_ptr<Graph> copy_this()
+	{
+		return make_unique<Graph>(*this);
+	}
+
+public:
+		
 	Graph(size_t vertexCount)
 		: adjacent(vertexCount)
 		, degree(vertexCount)
@@ -73,20 +100,28 @@ public:
 	{}
 
 	size_t count() const { return cnt; }
-
-	bool addEdge(size_t from, size_t to, size_t weight = inf);
-	
-	bool addEdge(const Edge& e)
+		
+	void add(const Edge& e)
 	{
 		return addEdge(e.vBegin, e.vEnd, e.weight);
 	};
 
-	bool removeEdge(size_t from, size_t to);
-	
-	bool removeEdge(const Edge& e)
+	void add(const initializer_list<Edge>& edges)
+	{
+		for (const auto& e : edges)
+			add(e);
+	};
+
+	void remove(const Edge& e)
 	{
 		return removeEdge(e.vBegin, e.vEnd);
 	}
+
+	void remove(const initializer_list<Edge>& edges)
+	{
+		for (const auto& e : edges)
+			remove(e);
+	};
 
 	size_t getDegree(size_t v) const
 	{
@@ -98,17 +133,15 @@ public:
 	
 	Path dijkstra(size_t from, size_t to) const;  //Dijkstra algoithm
 
-	Graph spanningTree();
+	Graph spanningTree() const;
 
-	Graph kruskal();    // Kruskal algorithm
+	Graph kruskal() const;    // Kruskal algorithm
 	
-	Graph prim();		// Jarnik-Prim-Dijkstra algorithm
+	Graph prim() const;		  // Jarnik-Prim-Dijkstra algorithm
 	
-	// todo:
-	// check Graph & DirectedGraph
-	// Eulerian cycle  
-	// Eulerian trail is a special case of Eulerian cycle
+	Path eulerian_cycle();
 
+	Path eulerian_trail();
 };
 
 class DirectedGraph : public Graph
@@ -122,33 +155,39 @@ public:
 		, outDegree(vertexCount)
 	{}
 
-	bool addEdge(size_t from, size_t to, size_t weight = inf);
-	bool removeEdge(size_t from, size_t to);
-	
 	size_t getDegree(size_t v) const
 	{
 		return getInDegree(v) + getOutDegree(v);
 	}
 
-	DirectedGraph topologicalSort() const;
+	vector<size_t> topologicalSort() const;
 	
 	bool isDAG() const 
 	{ 
-		return 0 < topologicalSort().count(); 
+		return 0 < topologicalSort().size(); 
 	}
 
-	//todo: 
-	// find cycle in graph
-	
+	Path eulerian_trail();
 
 private:
-	size_t getInDegree(size_t v) const
+	void addEdge(size_t from, size_t to, size_t weight = inf) override;
+
+	void removeEdge(size_t from, size_t to) override;
+
+	size_t getInDegree(size_t v) const override
 	{
-		return getDegree(v);
+		return Graph::getDegree(v);
 	};
 
-	size_t getOutDegree(size_t v) const
+	size_t getOutDegree(size_t v) const override
 	{
 		return outDegree[v];
+	}
+
+	bool check_eulerian_cycle() const override; 
+
+	unique_ptr<Graph> copy_this() override
+	{
+		return make_unique<DirectedGraph>(*this);
 	}
 };
