@@ -46,7 +46,7 @@ double sqrtHero(double a, double precision)
 			value >>= 2;
 			++count;
 		}
-		return 1 << count; 
+		return 1ull << count; 
 	};
 
 	double x = seed(static_cast<size_t>(round(a)));

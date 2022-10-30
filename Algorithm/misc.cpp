@@ -81,12 +81,12 @@ void towersOfHanoi(size_t from, size_t to, size_t mid, size_t count)
 {
 	if (count < 2)
 	{
-		printf("%u : %u -> %u\n", count, from, to);
+		printf("%zu : %zu -> %zu\n", count, from, to);
 		return;
 	}
 
 	towersOfHanoi(from, mid, to, count - 1);
-	printf("%u : %u -> %u\n", count, from, to);
+	printf("%zu : %zu -> %zu\n", count, from, to);
 	towersOfHanoi(mid, to, from, count - 1);
 	
 	return;

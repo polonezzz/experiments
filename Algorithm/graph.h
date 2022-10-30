@@ -26,7 +26,7 @@ struct Edge
 
 	bool operator>(const Edge& other) const
 	{
-		return other.weight < weight;
+		return other < *this;
 	}
 };
 

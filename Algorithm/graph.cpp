@@ -83,7 +83,6 @@ Graph::Path Graph::DFS(size_t from, size_t to) const
 
 		if (clr[v] == Color::Black)
 		{
-			clr[v] = Color::White;
 			st.pop();
 			continue;
 		}

@@ -180,7 +180,7 @@ int wmain(int argc, wchar_t* argv[])
 		initializer_list<Edge> edges = { { 0, 1 }, { 0, 3 }, { 1, 3 }, { 3, 4 }, { 4, 2 }, 
 										 { 2, 5 }, { 1, 6 }, { 2, 6 }, { 7, 8 } };
 		g.add(edges);
-	
+		
 		auto ret = g.DFS(0, 2);
 		
 		ret = g.DFS(2, 3);
@@ -311,8 +311,8 @@ int wmain(int argc, wchar_t* argv[])
 	}
 
 	{
-		auto p = make_shared<C>(13, "askjdlasdj");
-		auto ps = shared_ptr<string>(p, &p->name);
+		auto p = std::make_shared<C>(13, "askjdlasdj");
+		auto ps = std::shared_ptr<string>(p, &p->name);
 
 		p->name = "123123";
 		//auto pn = make_shared<int>(p, &p->num);
