@@ -227,6 +227,15 @@ int wmain(int argc, wchar_t* argv[])
 		ret = g3.dijkstra(A, E);
 		ret = g3.dijkstra(C, J);
 
+		//Graph gNegWeight(5);
+		DirectedGraph gNegWeight(5);
+		gNegWeight.add({ {0,1,6}, {1,3,5}, {3,1,-2}, {0,2,7}, {1,2,8},
+				 {4,0,2}, {1,4,-4}, {4,3,5 /*7*/}, {2,4,9}, {2,3,-3}});
+
+		bool nCycle = false;
+		tie(ret, nCycle) = gNegWeight.bellman_ford(0, 1);
+		tie(ret, nCycle) = gNegWeight.bellman_ford(3, 0);
+
 		DirectedGraph euler(10);
 
 		edges = {
@@ -235,7 +244,7 @@ int wmain(int argc, wchar_t* argv[])
 				{ 0, 2 }, { 2, 5 }, { 2, 7 }, { 7, 8 }, { 8, 9 } 
 		        };
 		
-		for (auto e : edges)
+		for (const auto& e : edges)
 		{
 			euler.add(e);
 			euler.add({ e.vEnd, e.vBegin, e.weight });

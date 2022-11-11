@@ -7,13 +7,18 @@
 
 using namespace std;
 
+using Vertex = size_t;
+using Weight = int64_t;
+
 struct Edge
 {
-	size_t vBegin = size_t(-1);
-	size_t vEnd = size_t(-1);
-	size_t weight = size_t(-1);
+	Vertex vBegin = std::numeric_limits<Vertex>::max();
+	Vertex vEnd = std::numeric_limits<Vertex>::max();
+	
+	static const Weight inf = std::numeric_limits<Weight>::max();
+	Weight weight = inf;
 
-	Edge(size_t begin, size_t end, size_t weight = size_t(-1))
+	Edge(Vertex begin, Vertex end, Weight weight = inf)
 		:vBegin(begin), vEnd(end), weight(weight)
 	{}
 
@@ -35,24 +40,20 @@ class Graph
 	size_t cnt = 0;
 
 public:
-	static const size_t inf = size_t(-1);
+	
+	static const Weight inf = std::numeric_limits<Weight>::max();
 	using Path = forward_list<Edge>;
 
 protected:
 	
 	struct AdjacentVertex
 	{
-		size_t vertex;
-		size_t edgeWeigth;
+		Vertex vertex;
+		Weight edgeWeigth;
 		
-		AdjacentVertex(size_t v, size_t w = inf)
+		AdjacentVertex(Vertex v, Weight w = inf)
 			: vertex(v), edgeWeigth(w)
 		{}
-
-		operator size_t() const
-		{
-			return vertex;
-		}
 	};
 
 	using AdjacentCont = forward_list<AdjacentVertex>;
@@ -60,12 +61,12 @@ protected:
 	vector<AdjacentCont> adjacent;
 	vector<size_t> degree;
 
-	const AdjacentCont& at(size_t v) const
+	const AdjacentCont& at(Vertex v) const
 	{
 		return adjacent.at(v);
 	};
 
-	bool remove_vertex(AdjacentCont& list, size_t v);
+	bool remove_vertex(AdjacentCont& list, Vertex v);
 	Path inner_eulerian_cycle(const Edge& e);
 	Path inner_eulerian_trail(const Edge& e);
 	
@@ -82,9 +83,9 @@ private:
 		return getDegree(v);
 	}
 
-	virtual void addEdge(size_t from, size_t to, size_t weight = inf);
+	virtual void addEdge(Vertex from, Vertex to, Weight weight = inf);
 
-	virtual void removeEdge(size_t from, size_t to);
+	virtual void removeEdge(Vertex from, Vertex to);
 
 	virtual unique_ptr<Graph> copy_this()
 	{
@@ -93,13 +94,13 @@ private:
 
 public:
 		
-	Graph(size_t vertexCount)
+	Graph(Vertex vertexCount)
 		: adjacent(vertexCount)
 		, degree(vertexCount)
 		, cnt(vertexCount)
 	{}
 
-	size_t count() const { return cnt; }
+	Vertex count() const { return cnt; }
 		
 	void add(const Edge& e)
 	{
@@ -123,15 +124,17 @@ public:
 			remove(e);
 	};
 
-	size_t getDegree(size_t v) const
+	size_t getDegree(Vertex v) const
 	{
 		return degree[v];
 	}
 	
-	Path DFS(size_t from, size_t to) const;
-	Path shortestPath(size_t from, size_t to) const;
+	Path DFS(Vertex from, Vertex to) const;
+	Path shortestPath(Vertex from, Vertex to) const;
 	
-	Path dijkstra(size_t from, size_t to) const;  //Dijkstra algoithm
+	Path dijkstra(Vertex from, Vertex to) const;  //Dijkstra algoithm
+
+	pair<Path,bool> bellman_ford(Vertex from, Vertex to) const; //Bellman - Ford algorithm
 
 	Graph spanningTree() const;
 
@@ -150,17 +153,17 @@ class DirectedGraph : public Graph
 	vector<size_t> outDegree;
 
 public:
-	DirectedGraph(size_t vertexCount)
+	DirectedGraph(Vertex vertexCount)
 		: Graph(vertexCount)
 		, outDegree(vertexCount)
 	{}
 
-	size_t getDegree(size_t v) const
+	size_t getDegree(Vertex v) const
 	{
 		return getInDegree(v) + getOutDegree(v);
 	}
 
-	vector<size_t> topologicalSort() const;
+	vector<Vertex> topologicalSort() const;
 	
 	bool isDAG() const 
 	{ 
@@ -170,16 +173,16 @@ public:
 	Path eulerian_trail();
 
 private:
-	void addEdge(size_t from, size_t to, size_t weight = inf) override;
+	void addEdge(Vertex from, Vertex to, Weight weight = inf) override;
 
-	void removeEdge(size_t from, size_t to) override;
+	void removeEdge(Vertex from, Vertex to) override;
 
-	size_t getInDegree(size_t v) const override
+	size_t getInDegree(Vertex v) const override
 	{
 		return Graph::getDegree(v);
 	};
 
-	size_t getOutDegree(size_t v) const override
+	size_t getOutDegree(Vertex v) const override
 	{
 		return outDegree[v];
 	}

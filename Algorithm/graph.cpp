@@ -11,7 +11,7 @@
 
 #include <cassert>
 
-void Graph::addEdge(size_t from, size_t to, size_t weight)
+void Graph::addEdge(Vertex from, Vertex to, Weight weight)
 {
 	adjacent.at(from).push_front({ to, weight });
 	++degree[to];
@@ -21,7 +21,7 @@ void Graph::addEdge(size_t from, size_t to, size_t weight)
 	return;
 }
 
- bool Graph::remove_vertex(AdjacentCont& list, size_t v)
+bool Graph::remove_vertex(AdjacentCont& list, Vertex v)
 {
 	bool res = false;
 
@@ -46,7 +46,7 @@ void Graph::addEdge(size_t from, size_t to, size_t weight)
 };
 
 
-void Graph::removeEdge(size_t from, size_t to)
+void Graph::removeEdge(Vertex from, Vertex to)
 {
 	if (remove_vertex(adjacent.at(from), to))
 		--degree[to];
@@ -56,7 +56,7 @@ void Graph::removeEdge(size_t from, size_t to)
 	return;
 }
 
-Graph::Path Graph::DFS(size_t from, size_t to) const
+Graph::Path Graph::DFS(Vertex from, Vertex to) const
 {
 	auto vcount = count();
 
@@ -72,7 +72,7 @@ Graph::Path Graph::DFS(size_t from, size_t to) const
 
 	vector<Color> clr(count(), Color::White);
 
-	stack<size_t> st;
+	stack<Vertex> st;
 	st.push(from);
 
 	Path path;
@@ -107,12 +107,12 @@ Graph::Path Graph::DFS(size_t from, size_t to) const
 		}
 		else
 		{
-			for (auto av : at(v))
+			for (const auto& av : at(v))
 			{
-				if (clr[av] == Color::White)
+				if (clr[av.vertex] == Color::White)
 				{
-					clr[av] = Color::Grey;
-					st.push(av);
+					clr[av.vertex] = Color::Grey;
+					st.push(av.vertex);
 				}
 			}
 		}
@@ -121,7 +121,7 @@ Graph::Path Graph::DFS(size_t from, size_t to) const
 	return path;
 }
 
-Graph::Path Graph::shortestPath(size_t from, size_t to) const
+Graph::Path Graph::shortestPath(Vertex from, Vertex to) const
 {
 	auto vcount = count();
 
@@ -130,28 +130,28 @@ Graph::Path Graph::shortestPath(size_t from, size_t to) const
 
 	// make BFS
 
-	std::queue<size_t> q;
+	std::queue<Vertex> q;
 	q.push(from);
 
 	std::vector<bool> used(vcount);
 	used[from] = true;
 
-	std::vector<size_t> distance(vcount);
-	std::vector<size_t> prev(vcount, inf);
-	
+	std::vector<Vertex> distance(vcount);
+	std::vector<Vertex> prev(vcount, inf);
+
 	while (!q.empty())
 	{
 		auto v = q.front();
 		q.pop();
 
-		for (auto next : at(v))
+		for (auto& next : at(v))
 		{
-			if (!used[next])
+			if (!used[next.vertex])
 			{
-				used[next] = true;
-				q.push(next);
-				distance[next] = distance[v] + 1;
-				prev[next] = v;
+				used[next.vertex] = true;
+				q.push(next.vertex);
+				distance[next.vertex] = distance[v] + 1;
+				prev[next.vertex] = v;
 			}
 		}
 	}
@@ -172,17 +172,17 @@ Graph::Path Graph::shortestPath(size_t from, size_t to) const
 	return path;
 }
 
-Graph::Path Graph::dijkstra(size_t from, size_t to) const
+Graph::Path Graph::dijkstra(Vertex from, Vertex to) const
 {
 	vector<bool> marked(count(), false);
-	vector<size_t> dist(count(), inf);
+	vector<Weight> dist(count(), inf);
 
 	vector<Edge> prev(count());
 	for (size_t i = 0; i < count(); ++i)
 		prev[from] = { from, i, inf };
 	prev[from] = { from, from, 0 };
 
-	queue<size_t> q;
+	queue<Vertex> q;
 
 	dist[from] = 0;
 	q.push(from);
@@ -192,18 +192,17 @@ Graph::Path Graph::dijkstra(size_t from, size_t to) const
 		auto v = q.front();
 		q.pop();
 
+		if (marked[v])
+			continue;
+
 		for (auto& av : at(v))
 		{
-			if (!marked[av])
+			q.push(av.vertex);
+
+			if (dist[v] + av.edgeWeigth < dist[av.vertex])
 			{
-				q.push(av);
-
-
-				if (dist[v] + av.edgeWeigth < dist[av])
-				{
-					dist[av] = dist[v] + av.edgeWeigth;
-					prev[av] = { v, av, av.edgeWeigth };
-				}
+				dist[av.vertex] = dist[v] + av.edgeWeigth;
+				prev[av.vertex] = { v, av.vertex, av.edgeWeigth };
 			}
 		}
 
@@ -225,14 +224,80 @@ Graph::Path Graph::dijkstra(size_t from, size_t to) const
 	return path;
 }
 
+pair<Graph::Path, bool> Graph::bellman_ford(Vertex from, Vertex to) const
+{
+	const auto vcnt = count();
+	vector<Weight> dist(vcnt, inf);
+
+	vector<Edge> prev(vcnt);
+	for (Vertex i = 0; i < vcnt; ++i)
+		prev[from] = { from, i, inf };
+	prev[from] = { from, from, 0 };
+
+	dist[from] = 0;
+
+	for (Vertex i = 0; i < vcnt - 1; ++i)
+	{
+		for (Vertex v = 0; v < vcnt; ++v)
+		{
+			for (auto& av : at(v))
+			{
+				if (dist[v] != inf && dist[v] + av.edgeWeigth < dist[av.vertex])
+				{
+					dist[av.vertex] = dist[v] + av.edgeWeigth;
+					prev[av.vertex] = { v, av.vertex, av.edgeWeigth };
+				}
+			}
+		}
+	}
+
+	Path path;
+	bool nCycle = false;
+
+	if (prev[to].weight != inf)
+	{
+		vector<Vertex> marked(vcnt, false);
+		
+		auto v = to;
+		marked[v] = true;
+
+		Vertex x = 0;
+		
+		while (!(v == from || nCycle))
+		{
+			path.push_front(prev[v]);
+			v = prev[v].vBegin;
+
+			if (nCycle = marked[v])
+				x = v;
+			else
+				marked[v] = true;
+		}
+
+		if (nCycle)
+		{
+			path.clear();
+			auto v = x;
+			do
+			{
+				path.push_front(prev[v]);
+				v = prev[v].vBegin;
+			} while (v != x);
+		}
+
+	}
+
+	return make_pair(path,nCycle);
+}
+
 Graph Graph::spanningTree() const
 {
 	Graph temp(count());
 
-	std::queue<size_t> q;
+	std::queue<Vertex> q;
 	std::vector<bool> used(temp.count(), false);
 
-	for (size_t i = 0; i < count(); ++i)
+	for (Vertex i = 0; i < count(); ++i)
 	{
 		if (used[i])
 			continue;
@@ -247,11 +312,11 @@ Graph Graph::spanningTree() const
 
 			for (auto next : at(v))
 			{
-				if (!used[next])
+				if (!used[next.vertex])
 				{
-					used[next] = true;
+					used[next.vertex] = true;
 					temp.addEdge(v, next.vertex, next.edgeWeigth);
-					q.push(next);
+					q.push(next.vertex);
 				}
 			}
 		}
@@ -263,12 +328,12 @@ Graph Graph::spanningTree() const
 Graph Graph::kruskal() const
 {
 	vector<Edge> edges;
-	vector<size_t> colors(count());
+	vector<Vertex> colors(count());
 
-	for (size_t i = 0; i < count(); ++i)
+	for (Vertex i = 0; i < count(); ++i)
 	{
 		for (const auto& j : at(i))
-			edges.emplace_back(i, j, j.edgeWeigth);
+			edges.emplace_back(i, j.vertex, j.edgeWeigth);
 
 		colors[i] = i;
 	}
@@ -277,21 +342,12 @@ Graph Graph::kruskal() const
 
 	Graph temp(count());
 
-	auto repaint = [&colors](auto from, auto to)
-	{
-		for (auto& c : colors)
-		{
-			if (c == from)
-				c = to;
-		}
-	};
-
 	for (const auto& e : edges)
 	{
 		if (colors[e.vBegin] != colors[e.vEnd])
 		{
 			temp.addEdge(e.vBegin, e.vEnd, e.weight);
-			repaint(colors[e.vEnd], colors[e.vBegin]);
+			std::replace(colors.begin(), colors.end(), colors[e.vEnd], colors[e.vBegin]);
 		}
 	}
 
@@ -314,7 +370,7 @@ Graph Graph::prim() const
 	{
 		allMarked = true;
 
-		for (size_t v = 0; v < cnt; ++v)
+		for (Vertex v = 0; v < cnt; ++v)
 		{
 			if (marked[v])
 				continue;
@@ -367,7 +423,7 @@ Graph::Path Graph::inner_eulerian_cycle(const Edge& e)
 	remove(st.top());
 
 	size_t v = e.vEnd;
-	
+
 	while (!st.empty())
 	{
 		if (getOutDegree(v))
@@ -380,22 +436,22 @@ Graph::Path Graph::inner_eulerian_cycle(const Edge& e)
 		}
 		else
 		{
-			auto edge = st.top();
+			auto& edge = st.top();
 			path.push_front(edge);
 			st.pop();
 
 			v = edge.vBegin;
 		}
-	} ;
+	};
 
 	return path;
 }
 
 bool Graph::check_eulerian_cycle() const
 {
-	size_t i = 0;
+	Vertex i = 0;
 	for (; i < count() && (getDegree(i) % 2 == 0); ++i);
-		
+
 	return i == count();
 }
 
@@ -403,17 +459,17 @@ Graph::Path Graph::eulerian_cycle()
 {
 	if (!check_eulerian_cycle())
 		return Path();
-	
+
 	auto temp = copy_this();
-	
+
 	size_t v = 0;
 	while (v < temp->count() && temp->at(v).empty())   // find first non-isolated vertex
 		++v;
-	
+
 	if (v == temp->count())
 		return Path();
 
-	auto adj = at(v).front();
+	const auto& adj = at(v).front();
 
 	return temp->inner_eulerian_cycle({ v, adj.vertex, adj.edgeWeigth });
 }
@@ -431,34 +487,34 @@ Graph::Path Graph::inner_eulerian_trail(const Edge& e)
 
 Graph::Path Graph::eulerian_trail()
 {
-	vector<size_t> odds;
-	for (size_t i = 0; i < count(); ++i)
+	vector<Vertex> odds;
+	for (Vertex i = 0; i < count(); ++i)
 		if (getDegree(i) % 2 == 1)
 			odds.push_back(i);
-	
+
 	switch (odds.size())
 	{
-	case 0: 
+	case 0:
 		return eulerian_cycle();
 
 	case 2:
 		return inner_eulerian_trail({ odds[0], odds[1] });
-		
+
 	default:
 		return Path();
 	}
 }
 
-void DirectedGraph::addEdge(size_t from, size_t to, size_t weight)
+void DirectedGraph::addEdge(Vertex from, Vertex to, Weight weight)
 {
 	adjacent.at(from).push_front({ to, weight });
 	++degree[to];
 	++outDegree[from];
-		
+
 	return;
 }
 
-void DirectedGraph::removeEdge(size_t from, size_t to)
+void DirectedGraph::removeEdge(Vertex from, Vertex to)
 {
 	if (remove_vertex(adjacent.at(from), to))
 	{
@@ -472,7 +528,7 @@ void DirectedGraph::removeEdge(size_t from, size_t to)
 
 bool DirectedGraph::check_eulerian_cycle() const
 {
-	size_t i = 0;
+	Vertex i = 0;
 	for (; i < count() && (getInDegree(i) == getOutDegree(i)); ++i);
 
 	return i == count();
@@ -480,11 +536,11 @@ bool DirectedGraph::check_eulerian_cycle() const
 
 DirectedGraph::Path DirectedGraph::eulerian_trail()
 {
-	vector<size_t> odds;
-	for (size_t i = 0; i < count(); ++i)
+	vector<Vertex> odds;
+	for (Vertex i = 0; i < count(); ++i)
 		if (getInDegree(i) != getOutDegree(i))
 			odds.push_back(i);
-	
+
 	switch (odds.size())
 	{
 	case 0:
@@ -494,7 +550,7 @@ DirectedGraph::Path DirectedGraph::eulerian_trail()
 	{
 		//begin: in = out + 1
 		//end  : in = out - 1
-		
+
 		auto check = [this](auto lhs, auto rhs)
 		{
 			return getInDegree(lhs) == getOutDegree(lhs) + 1
@@ -530,9 +586,9 @@ vector<size_t> DirectedGraph::topologicalSort() const
 	};
 
 	vector<Color> clr(count(), Color::White);
-	vector<size_t> sorted;
-	
-	function<void(size_t)> visit = [&](size_t v)
+	vector<Vertex> sorted;
+
+	function<void(Vertex)> visit = [&](Vertex v)
 	{
 		if (clr[v] == Color::Black)
 			return;
@@ -541,9 +597,9 @@ vector<size_t> DirectedGraph::topologicalSort() const
 			throw invalid_argument(nullptr);
 
 		clr[v] = Color::Grey;
-		
+
 		for (const auto& av : at(v))
-			visit(av);
+			visit(av.vertex);
 
 		clr[v] = Color::Black;
 		sorted.push_back(v);
@@ -552,12 +608,12 @@ vector<size_t> DirectedGraph::topologicalSort() const
 
 	try
 	{
-		for (size_t v = 0; v < count(); ++v)
+		for (Vertex v = 0; v < count(); ++v)
 			visit(v);
 	}
 	catch (const invalid_argument&)
 	{
-		return vector<size_t>();
+		return vector<Vertex>();
 	}
 
 	/*
@@ -574,7 +630,7 @@ vector<size_t> DirectedGraph::topologicalSort() const
 		for (auto j : at(i))
 			sortedGraph.addEdge(mapped[i], mapped[j]);
 	*/
-	
+
 	reverse(begin(sorted), end(sorted));
 	return sorted;
 }
