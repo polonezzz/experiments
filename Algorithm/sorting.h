@@ -1,7 +1,9 @@
 #pragma once
 
 #include <algorithm>
+#include <array>
 #include <future>
+#include <numeric>
 #include <stack>
 #include <string>
 
@@ -12,11 +14,11 @@ void quicksort(It begin, It end)
 		return;
 
 	auto pivot = *begin;
-	auto mid = std::partition(begin, end, [pivot](auto val) { return val < pivot; });
-	auto mid2 = std::partition(mid, end, [pivot](auto val) { return !(pivot < val); });
+	auto mid = std::partition(begin, end, [pivot](auto val) { return val < pivot; });   // less | greater or equal
+	auto mid2 = std::partition(mid, end, [pivot](auto val) { return !(pivot < val); }); // equal | greater
 
-	auto f = std::async(quicksort<It>, mid2, end);	// high part
-	quicksort(begin, mid);							// low part		
+	auto f = std::async(quicksort<It>, mid2, end);	// greater than pivot
+	quicksort(begin, mid);							// less than pivot
 	
 	return f.get();
 }
@@ -60,6 +62,44 @@ void insertSort(It begin, It end, Pred pred)		//random access iterators
 		std::rotate(std::upper_bound(begin, i, *i, pred), i, i + 1);
 }
 
+
+template <typename It, typename Pred>
+void mergeInplace(It lbegin, It lend, It rbegin, It rend, Pred pred)
+{
+	while (lbegin != lend && rbegin != rend)
+	{
+		if (!pred(*lbegin, *rbegin))
+		{
+			std::rotate(lbegin, rbegin, rbegin + 1);
+
+			++lend;
+			++rbegin;
+		}
+		++lbegin;
+	}
+}
+
+template <typename It, typename Pred>
+void mergeSort(It begin, It end, Pred pred)			//random access iterators
+{
+	auto size = std::distance(begin, end);
+	decltype(size) step = 1;
+
+	while (step < size)
+	{
+		auto i = begin;
+		while (i != end)
+		{
+			auto j = i + std::min(step, std::distance(i, end));
+			auto k = j + std::min(step, std::distance(j, end));
+			mergeInplace(i, j, j, k, pred);		
+			i = k;
+		}
+		step *= 2;
+	}
+}
+
+
 template<typename T, typename Pred>
 void sortingStack(std::stack<T>& s, Pred pred)
 {
@@ -88,3 +128,10 @@ void sortingStack(std::stack<T>& s, Pred pred)
 
 	s.swap(temp);
 }
+
+std::vector<uint64_t> lsdRadixSort(std::vector<uint64_t> data);
+
+std::vector<std::string> msdRadixSort(const std::vector<std::string>& data);
+std::vector<size_t> inner_msdRadixSort(const std::vector<std::string>& data, const std::vector<size_t>& pos, size_t index);
+
+

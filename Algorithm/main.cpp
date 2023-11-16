@@ -138,6 +138,23 @@ void executionPolicy(Policy policy)
 int wmain(int argc, wchar_t* argv[])
 {
 	{
+		std::vector<int> v{ 2, 4, 2, 0, 5, 10, 7, 3, 7, 1 };
+		mergeSort(v.begin(), v.end(), std::greater_equal<int>());
+		std::copy(v.begin(), v.end(), std::ostream_iterator<int>{std::cout, ", "});
+	}
+
+
+	{
+		auto uints = lsdRadixSort({ 170, 45, 75, 90, 2, 802, 2, 66 });
+		uints = lsdRadixSort({ 175, 45, 75, 95, 5, 805, 2, 65 });
+		uints = lsdRadixSort({ 10, 1000, 1, 10, 10000, 100, 1000, 100, 10 });
+
+		auto strings = msdRadixSort({ "gen?", "gen ", "mt19937", "", "random_device", "dist!", " ",
+									  "dist", "uint_distribution", "uint32_t", "0", "56", "42",
+									  "mutable", "return", "distt", "gen" });
+	}
+
+	{
 		auto less = [](auto a, auto b) { return a < b; };
 		
 		ForwardList<int16_t> l;
@@ -233,8 +250,8 @@ int wmain(int argc, wchar_t* argv[])
 				 {4,0,2}, {1,4,-4}, {4,3,5 /*7*/}, {2,4,9}, {2,3,-3}});
 
 		bool nCycle = false;
-		tie(ret, nCycle) = gNegWeight.bellman_ford(0, 1);
-		tie(ret, nCycle) = gNegWeight.bellman_ford(3, 0);
+		std::tie(ret, nCycle) = gNegWeight.bellman_ford(0, 1);
+		std::tie(ret, nCycle) = gNegWeight.bellman_ford(3, 0);
 
 		DirectedGraph euler(10);
 
