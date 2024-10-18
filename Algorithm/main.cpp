@@ -11,6 +11,7 @@
 #include <iterator>
 #include <map>
 #include <memory>
+#include <numbers>
 #include <numeric>
 #include <queue>
 #include <random>
@@ -20,8 +21,6 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-
-#include <experimental\string>
 
 #include "algo.h"
 #include "bst.h"
@@ -135,23 +134,69 @@ void executionPolicy(Policy policy)
 	cout << duration_cast<milliseconds>(tend - tstart).count() <<" - ";
 }
 
+template <typename Cont>
+void fillByInts(Cont& cont, size_t count, int min, int max)
+{
+	mt19937 gen(random_device{}());
+	std::uniform_int_distribution<> dis(min, max);
+	
+	//cont.clear();
+
+	for (size_t i = 0; i < count; ++i)
+		cont.push_back(dis(gen));
+}
+
+template <typename Cont>
+void print(Cont&& cont)
+{
+	std::copy(cont.begin(), cont.end(), std::ostream_iterator<int>{std::cout, " "});
+	std::cout << "\n\r";
+}
+
 int wmain(int argc, wchar_t* argv[])
 {
+	
 	{
-		std::vector<int> v{ 2, 4, 2, 0, 5, 10, 7, 3, 7, 1 };
-		mergeSort(v.begin(), v.end(), std::greater_equal<int>());
-		std::copy(v.begin(), v.end(), std::ostream_iterator<int>{std::cout, ", "});
-	}
+		std::vector<int> data;
+		fillByInts(data, 25, -10, 10);
+		print(data);
+		quicksort2(data.begin(), data.end());
+		print(data);
+		
+		LinkedList<int> list{ data.begin(), data.end() };
+		for (size_t i = 0; i < list.Length(); ++i)
+			std::cout << list.Get(i) << " ";
+		std::cout << "\n\r";
 
+		while(!list.Empty())
+			std::cout << list.Pop() << " ";
+		std::cout << "\n\r";
 
-	{
-		auto uints = lsdRadixSort({ 170, 45, 75, 90, 2, 802, 2, 66 });
-		uints = lsdRadixSort({ 175, 45, 75, 95, 5, 805, 2, 65 });
-		uints = lsdRadixSort({ 10, 1000, 1, 10, 10000, 100, 1000, 100, 10 });
+		data = { 1,1,1,1,1,1,1,1,1,1 };
+		quicksort2(data.begin(), data.end());
+		print(data);
+
+		std::vector<int> v;
+		fillByInts(v, 10, 1, 10);
+		print(v);
+		mergeSort(v.begin(), v.end(), std::less_equal());
+		print(v);
+
+		std::vector<uint16_t> nums = { 170, 45, 75, 90, 2, 802, 2, 66 };
+		auto res = radixSort(nums);
+
+		if (binSearch(res.begin(), res.end(), 1) == res.end())
+			binSearch(res.begin(), res.end(), 802);
+
+		auto res2 = lsdRadixSort({ 170, 45, 75, 90, 2, 802, 2, 66 });
+		res2 = lsdRadixSort({ 175, 45, 75, 95, 5, 805, 2, 65 });
+		res2 = lsdRadixSort({ 10, 1000, 1, 10, 10000, 100, 1000, 100, 10 });
 
 		auto strings = msdRadixSort({ "gen?", "gen ", "mt19937", "", "random_device", "dist!", " ",
 									  "dist", "uint_distribution", "uint32_t", "0", "56", "42",
 									  "mutable", "return", "distt", "gen" });
+		
+		return 0;
 	}
 
 	{
@@ -325,7 +370,7 @@ int wmain(int argc, wchar_t* argv[])
 		std::cout << '\n';
 	}
 	
-	auto res =  rotateQ(Quaternion(0, 1, 0, 0), Quaternion(0, 0, 1, 0), - std::_Pi / 4);
+	auto res =  rotateQ(Quaternion(0, 1, 0, 0), Quaternion(0, 0, 1, 0), - std::numbers::pi / 4);
 	
 	{
 		for (size_t i = 0; i < 20; ++i)
@@ -436,7 +481,7 @@ int wmain(int argc, wchar_t* argv[])
 
 
 	mt19937 gen(random_device{}());
-	uniform_int<uint32_t> udis(0, 100);
+	uniform_int_distribution<uint32_t> udis(0, 100);
 
 	stack<uint32_t> st;
 	for (size_t i = 0; i < 20; ++i)
@@ -496,13 +541,7 @@ int wmain(int argc, wchar_t* argv[])
 		tree.remove(dis(gen));
 
 	tree.clear();
-
-	std::vector<int32_t> data;
-	data.reserve(20);
-	for (size_t i = 0; i < data.capacity(); ++i)
-		data.push_back(dis(gen));
-
-	quicksort(data.begin(), data.end());
+	
 	
 /*	
 	auto r = sieve(121);

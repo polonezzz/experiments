@@ -6,6 +6,7 @@
 #include <numeric>
 #include <stack>
 #include <string>
+#include <type_traits>
 
 template <typename It>
 void quicksort(It begin, It end)
@@ -22,6 +23,37 @@ void quicksort(It begin, It end)
 	
 	return f.get();
 }
+
+template <typename It>
+void quicksort2(It begin, It end)
+{
+	if (std::distance(begin, end) < 2)
+		return;
+
+	auto pivot = *begin;
+	
+	auto lt = begin;
+	auto eq = begin;
+	auto gt = end;
+
+	--gt;
+
+	while (eq <= gt)
+	{
+		if (*eq < pivot)
+			std::swap(*lt++, *eq++);
+		else if (pivot < *eq)
+			std::swap(*eq, *gt--);
+		else
+			++eq;
+	};
+
+	quicksort2(begin, lt);
+	quicksort2(eq, end);
+
+	return ;
+}
+
 
 template <typename It, typename Pred>
 void selectSort(It begin, It end, Pred pred)         //random access iterators
@@ -64,24 +96,26 @@ void insertSort(It begin, It end, Pred pred)		//random access iterators
 
 
 template <typename It, typename Pred>
-void mergeInplace(It lbegin, It lend, It rbegin, It rend, Pred pred)
+void mergeInplace(It begin, It mid, It end, Pred pred)
 {
-	while (lbegin != lend && rbegin != rend)
+	while (begin != mid && mid != end)
 	{
-		if (!pred(*lbegin, *rbegin))
+		if (!pred(*begin, *mid))
 		{
-			std::rotate(lbegin, rbegin, rbegin + 1);
+			std::rotate(begin, mid, mid + 1);
 
-			++lend;
-			++rbegin;
+			++mid;
 		}
-		++lbegin;
+		++begin;
 	}
 }
 
 template <typename It, typename Pred>
 void mergeSort(It begin, It end, Pred pred)			//random access iterators
 {
+	//complexity is O(logn * n^2)
+	// if linked list is being sorted then complexity is  O(n*logn)
+
 	auto size = std::distance(begin, end);
 	decltype(size) step = 1;
 
@@ -92,7 +126,7 @@ void mergeSort(It begin, It end, Pred pred)			//random access iterators
 		{
 			auto j = i + std::min(step, std::distance(i, end));
 			auto k = j + std::min(step, std::distance(j, end));
-			mergeInplace(i, j, j, k, pred);		
+			mergeInplace(i, j, k, pred);		
 			i = k;
 		}
 		step *= 2;
@@ -129,8 +163,36 @@ void sortingStack(std::stack<T>& s, Pred pred)
 	s.swap(temp);
 }
 
-std::vector<uint64_t> lsdRadixSort(std::vector<uint64_t> data);
+template <typename T, size_t Base = 10>
+std::vector<T> radixSort(std::vector<T> data, std::enable_if_t<std::is_unsigned<T>::value, bool> = true)
+{
+	T largest = *std::max_element(data.begin(), data.end());
+	T divisor = 1;
 
+	std::vector<std::vector<T>> buckets{Base};
+
+	while (largest / divisor)
+	{
+		for (auto num : data)
+		{
+			auto digit = num / divisor % Base;
+			buckets[digit].push_back(num);
+		}
+
+		auto it = data.begin();
+		for (auto& b : buckets)
+		{
+			it = std::move(b.begin(), b.end(), it);
+			b.clear();
+		}
+
+		divisor *= Base;
+	}
+
+	return data;
+}
+
+std::vector<uint64_t> lsdRadixSort(std::vector<uint64_t> data);
 std::vector<std::string> msdRadixSort(const std::vector<std::string>& data);
 std::vector<size_t> inner_msdRadixSort(const std::vector<std::string>& data, const std::vector<size_t>& pos, size_t index);
 
