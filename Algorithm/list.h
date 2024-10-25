@@ -2,6 +2,9 @@
 
 #include <initializer_list>
 #include <exception>
+#include <iostream>
+#include <string>
+
 
 template <typename T>
 class ForwardList;
@@ -220,14 +223,14 @@ public:
 				node = res.insert_after(node, rhs->data);
 				rhs = rhs->next;
 			}
-			else if (!comp(lhs->data, rhs->data))
-			{
-				rhs = rhs->next;
-			}
-			else
+			else if (comp(lhs->data, rhs->data))
 			{
 				node = res.insert_after(node, lhs->data);
 				lhs = lhs->next;
+			}
+			else
+			{
+				rhs = rhs->next;
 			}
 		}
 
@@ -280,15 +283,15 @@ public:
 			{
 				rhs = rhs->next;
 			}
-			else if (!comp(lhs->data, rhs->data))
-			{
-				lhs = lhs->next;
-				rhs = rhs->next;
-			}
-			else
+			else if (comp(lhs->data, rhs->data))
 			{
 				node = res.insert_after(node, lhs->data);
 				lhs = lhs->next;
+			}
+			else
+			{
+				lhs = lhs->next;
+				rhs = rhs->next;
 			}
 		}
 
@@ -312,15 +315,15 @@ public:
 				node = res.insert_after(node, rhs->data);
 				rhs = rhs->next;
 			}
-			else if (!comp(lhs->data, rhs->data))
-			{
-				lhs = lhs->next;
-				rhs = rhs->next;
-			}
-			else
+			else if (comp(lhs->data, rhs->data))
 			{
 				node = res.insert_after(node, lhs->data);
 				lhs = lhs->next;
+			}
+			else
+			{
+				lhs = lhs->next;
+				rhs = rhs->next;
 			}
 		}
 
@@ -371,7 +374,7 @@ private:
 
 
 template <typename T>
-class LinkedList
+class SimpleList
 {
 	struct Node
 	{
@@ -380,13 +383,12 @@ class LinkedList
 	};
 
 	Node* pHead = nullptr;
-	Node* pTail = nullptr;
-
+	
 	size_t length = 0;
 
 public:
 	template<typename It>
-	LinkedList(It begin, It end)
+	SimpleList(It begin, It end)
 	{
 		auto rbegin = std::make_reverse_iterator(end);
 		auto rend = std::make_reverse_iterator(begin);
@@ -395,7 +397,7 @@ public:
 			Push(*it);
 	}
 
-	~LinkedList()
+	~SimpleList()
 	{
 		while (pHead)
 		{

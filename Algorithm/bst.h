@@ -3,6 +3,7 @@
 // binary search tree
 
 #include <functional>
+#include <queue>
 #include <type_traits>
 
 template<typename Key, typename Comp = std::less<Key>>
@@ -19,12 +20,33 @@ class BST
 	Node* root = nullptr;
 	Comp comp;
 
-	void removeSubTree(Node* node);
-	Node* findSubTree(Node* node, const Key& key);
+	void removeSubTree(Node* node)
+	{
+		if (!node)
+			return;
+
+		removeSubTree(node->left);
+		removeSubTree(node->right);
+		delete node;
+
+	}
+
+	Node* findSubTree(Node* node, const Key& key)
+	{
+		if (!node)
+			return nullptr;
+
+		if (comp(key, node->key))
+			return findSubTree(node->left, key);
+		else if (comp(node->key, key))
+			return findSubTree(node->right, key);
+		else
+			return node;
+	}
 
 public:
 	
-	//static bool isBST(const BST& tree);
+
 
 	BST() = default;
 	BST(const BST& src) = delete;	
@@ -37,154 +59,141 @@ public:
 		clear();
 	}
 
-	bool insert(const Key& key);
-	
+	bool insert(const Key& key)
+	{
+		Node* node = root;
+		Node* parent = nullptr;
+		bool isleft = true;
+
+		while (node)
+		{
+			parent = node;
+			if (comp(key, node->key))
+			{
+				node = node->left;
+				isleft = true;
+			}
+			else if (comp(node->key, key))
+			{
+				node = node->right;
+				isleft = false;
+			}
+			else
+			{
+				return false;
+			}
+		}
+
+		node = new Node;
+		node->key = key;
+		node->parent = parent;
+		if (parent)
+			(isleft ? parent->left : parent->right) = node;
+		else
+			root = node;
+
+		return true;
+	}
+		
 	bool find(const Key& key) { return findSubTree(root, key); }
 	
-	void remove(const Key& key);
-	void clear();
+	void remove(const Key& key)
+	{
+		Node* node = findSubTree(root, key);
+
+		if (!node)
+			return;
+
+		if (node->left)
+		{
+			// search formaximum key in the left subtree 
+			
+			Node* n = node->left;
+			while (n->right)				     
+				n = n->right;
+											
+																		
+			(n == node->left ? node->left : n->parent->right) = n->left;
+			if (n->left)
+				n->left->parent = n->parent;
+
+			node->key = n->key;
+			node = n;
+			
+			// or we could search for minimum in the right subtree
+		}
+		else	// doesn't have left subtree			
+		{
+			if (auto p = node->parent)
+			{
+				(p->left == node ? p->left : p->right) = node->right;
+				if (node->right)
+					node->right->parent = p;
+			}
+			else
+			{
+				if (root = node->right)
+					root->parent = nullptr;
+			}
+		}
+
+		delete node;
+		node = nullptr;
+	}
+
+	void clear()
+	{
+		removeSubTree(root);
+		root = nullptr;
+	}
 	
 	bool empty() { return !root; }
 
-/*	 
-	template<class F, class ...Arg>
-	typename std::result_of<F(Arg...)>::type traverse(Node* node, F(Arg...) f)
-	{
-		if ()
-	}
-*/	
 	template<typename F>
-	void traverse(F f)
+	void dft(F f) const
 	{
-		traverse(root, f);
+		dft(root, f);
 	}
 
+
+	// depth-first traversal
 	template<typename F>
-	void traverse(Node* node, F f)
+	void dft(Node* node, F f) const
 	{
 		if (!node)
 			return;
 
-		traverse(node->left, f);
+		dft(node->left, f);
 		f(node->key);
-		traverse(node->right, f);
+		dft(node->right, f);
+	}
+
+	template<typename F>
+	void bft(F f) const
+	{
+		bft(root, f);
+	}
+
+	// breadth-first traversal
+	template<typename F>
+	void bft(Node* node, F f) const
+	{
+		if (!node)
+			return;
+
+		std::queue<Node*> queue;
+		queue.push(node);
+
+		while (!queue.empty())
+		{
+			if (auto node = queue.front())
+			{
+				f(node->key);
+				queue.push(node->left);
+				queue.push(node->right);
+			}
+			queue.pop();
+		}
 	}
 
 };
-
-/*
-template<typename Key, typename Comp>
-bool BST<Key, Comp>::isBST(const BST<Key, Comp>& tree)
-{
-	return tree.traverse(tree.root, )	
-}
-*/
-template<typename Key, typename Comp>
-bool BST<Key, Comp>::insert(const Key& key)
-{
-	Node* node = root;
-	Node* parent = nullptr;
-	bool isleft = true;
-	
-	while (node)
-	{
-		parent = node;
-		if (comp(key, node->key))
-		{
-			node = node->left;
-			isleft = true;
-		}
-		else if (comp(node->key, key))
-		{
-			node = node->right;
-			isleft = false;
-		}
-		else
-		{
-			return false;
-		}
-	}
-
-	node = new Node;
-	node->key = key;
-	node->parent = parent;
-	if (parent)
-		(isleft? parent->left : parent->right) = node;
-	else
-		root = node;
-
-	return true;
-}
-
-template<typename Key, typename Comp>
-typename BST<Key, Comp>::Node* BST<Key, Comp>::findSubTree(Node* node, const Key& key)
-{
-	if (!node)
-		return nullptr;
-
-	if (comp(key, node->key))
-		return findSubTree(node->left, key);	
-	else if (comp(node->key, key))
-		return findSubTree(node->right, key);
-	else
-		return node;
-}
-
-template<typename Key, typename Comp>
-void BST<Key, Comp>::remove(const Key& key)
-{
-	Node* node = findSubTree(root, key);
-
-	if (!node)
-		return;
-
-	if (!node->left)	// doesn't have left subtree			
-	{
-		if (auto p = node->parent)
-		{
-			(p->left == node ? p->left : p->right) = node->right;
-			if (node->right)
-				node->right->parent = p;
-		}
-		else
-		{
-			if (root = node->right)
-				root->parent = nullptr;
-		}
-	}
-	else      
-	{
-		Node* n = node->left;      
-		while (n->right)				// find maximum key in the left subtree      
-			n = n->right;
-
-		(n == node->left ? node->left : n->parent->right) = n->left;
-		if (n->left)
-			n->left->parent = n->parent;
-		
-		node->key = n->key;
-		node = n;
-	}
-
-	delete node;
-	node = nullptr;
-}
-
-template<typename Key, typename Comp>
-void BST<Key, Comp>::clear()
-{
-	removeSubTree(root);
-	root = nullptr;
-}
-
-template<typename Key, typename Comp>
-void BST<Key, Comp>::removeSubTree(Node* node)
-{
-	if (!node)
-		return;
-
-	removeSubTree(node->left);
-	removeSubTree(node->right);
-	delete node;
-	
-}

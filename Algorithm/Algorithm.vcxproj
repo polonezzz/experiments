@@ -160,12 +160,15 @@
     <ClInclude Include="bst.h" />
     <ClInclude Include="geometry.h" />
     <ClInclude Include="graph.h" />
+    <ClInclude Include="avl.h" />
+    <ClInclude Include="heap.h" />
     <ClInclude Include="list.h" />
     <ClInclude Include="misc.h" />
     <ClInclude Include="number.h" />
     <ClInclude Include="sorting.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="test.h" />
     <ClInclude Include="trie.h" />
   </ItemGroup>
   <ItemGroup>
@@ -177,6 +180,7 @@
     <ClCompile Include="number.cpp" />
     <ClCompile Include="sorting.cpp" />
     <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="test.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
