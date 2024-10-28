@@ -1,6 +1,7 @@
 #include "test.h"
 
 #include <cassert>
+#include <set>
 #include <tuple>
 
 namespace Test
@@ -21,7 +22,7 @@ namespace Test
 
 		tree.remove(2);
 		tree.bft(print);
-		
+
 		tree.clear();
 	}
 
@@ -33,23 +34,39 @@ namespace Test
 		heapSort(data.begin(), data.end(), std::greater{});
 		print(data);
 
-		data = { 5, 3, 2, 10};
+		data = { 5, 3, 2, 10 };
 		print(data);
 
 		heapSort(data.begin(), data.end(), std::greater{});
 		print(data);
 
-		data = { 5, 3};
+		data = { 5, 3 };
 		print(data);
 
 		heapSort(data.begin(), data.end(), std::less{});
 		print(data);
 	}
 
+	void heapSTL()
+	{
+		array<int, 10> a = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+		array<int, 10> ra;
+
+		copy(rbegin(a), rend(a), begin(ra));
+
+		make_heap(begin(a), end(a));
+		pop_heap(begin(a), end(a));
+		*(end(a) - 1) = -1;
+		push_heap(begin(a), end(a));
+
+		make_heap(begin(ra), end(ra));
+		sort_heap(begin(ra), end(ra));
+	}
+
 	void sorting()
 	{
 		std::vector<int> data;
-		
+
 		fillByInts(data, 25, -10, 10);
 		print(data);
 		quicksort2(data.begin(), data.end());
@@ -123,7 +140,7 @@ namespace Test
 
 	void graph()
 	{
-	
+
 		Graph g2(8);
 
 		initializer_list<Edge> edges = {
@@ -153,6 +170,70 @@ namespace Test
 		ret = g3.dijkstra(C, J);
 
 		//Graph gNegWeight(5);
+	}
+
+	void mazeBFS()
+	{
+		// https://github.com/btholt/algorithms-exercises/blob/main/specs/pathfinding/pathfinding.test.js
+		
+		std::vector<std::vector<int>> map =
+		{
+				{0, 0, 1, 0, 1, 0, 0, 0},
+				{0, 0, 0, 2, 0, 0, 0, 0},
+				{0, 0, 1, 1, 0, 0, 0, 1},
+				{0, 0, 0, 0, 0, 1, 0, 0},
+				{0, 0, 0, 1, 0, 1, 1, 0},
+				{0, 0, 0, 0, 0, 0, 1, 0},
+				{0, 2, 0, 0, 0, 0, 1, 0},
+				{0, 0, 0, 0, 0, 0, 1, 2}
+		};
+
+		size_t dim = map.size();
+
+		Graph maze{ dim * dim };
+
+		std::vector<Vertex> milestones;
+
+		for (size_t i = 0; i < dim; ++i)
+		{
+			for (size_t j = 0; j < dim; ++j)
+			{
+				if (map[i][j] == 1)	
+					continue;
+
+				Vertex v = i * dim + j;
+
+				if (map[i][j] == 2)
+					milestones.push_back(v);
+
+				if (i + 1 < dim && map[i + 1][j] != 1)
+					maze.add({ v, v + dim, 1 });
+				if (j + 1 < dim && map[i][j + 1] != 1)
+					maze.add({ v, v + 1, 1 });
+			}
+		}
+
+		if (milestones.size() > 1)
+		{
+			for (auto it = milestones.begin(); it != milestones.end() - 1; ++it)
+			{
+				auto path = maze.dijkstra(*it, *(it + 1));
+
+				if (path.empty())
+				{
+					std::printf("no way");
+				}
+				else
+				{
+					auto v = path.front().vBegin;
+					std::printf("[%zu,%zu] ", v / dim, v % dim);
+
+					for (const auto& v : path)
+						std::printf("[%zu,%zu] ", v.vEnd / dim, v.vEnd % dim);
+				}
+				std::printf("\n\r");
+			}
+		}
 	}
 
 	void directedGraph()
@@ -186,7 +267,7 @@ namespace Test
 				 {4,0,2}, {1,4,-4}, {4,3,5 /*7*/}, {2,4,9}, {2,3,-3} });
 
 		bool nCycle = false;
-		std::tie(ret, nCycle) = gNegWeight.bellman_ford(0, 1);
+		std::tie(ret, nCycle) = gNegWeight.bellman_ford(0, 3);
 		std::tie(ret, nCycle) = gNegWeight.bellman_ford(3, 0);
 
 		DirectedGraph euler(10);

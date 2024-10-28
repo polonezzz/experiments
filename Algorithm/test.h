@@ -14,10 +14,13 @@ namespace Test
 	void binarySearch();
 	void bst();
 	void graph();
+	void mazeBFS();
 	void directedGraph();
 	void list();
 	void sorting();
+	
 	void heapsort();
+	void heapSTL();
 }
 
 template <typename Cont>

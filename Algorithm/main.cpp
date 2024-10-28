@@ -134,30 +134,11 @@ void executionPolicy(Policy policy)
 
 int wmain(int argc, wchar_t* argv[])
 {
-	Test::heapsort();
+	Test::mazeBFS();
 
 	return 0;
 	
 	
-	
-	{
-		// make push pop heap
-
-		array<int, 10> a = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-		array<int, 10> ra;
-
-		copy(rbegin(a), rend(a), begin(ra));
-
-		make_heap(begin(a), end(a));
-		pop_heap(begin(a), end(a));
-		*(end(a) - 1) = -1;
-		push_heap(begin(a), end(a));
-		
-		make_heap(begin(ra), end(ra));
-		sort_heap(begin(ra), end(ra));
-		
-		;
-	}
 	
 	{
 		auto reduce_fn = [](auto a, auto x) {return a + x; };

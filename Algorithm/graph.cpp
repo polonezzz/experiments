@@ -179,7 +179,7 @@ Graph::Path Graph::dijkstra(Vertex from, Vertex to) const
 
 	vector<Edge> prev(count());
 	for (size_t i = 0; i < count(); ++i)
-		prev[from] = { from, i, inf };
+		prev[i] = { from, i, inf };
 	prev[from] = { from, from, 0 };
 
 	queue<Vertex> q;
