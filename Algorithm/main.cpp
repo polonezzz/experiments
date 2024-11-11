@@ -16,7 +16,7 @@
 #include <queue>
 #include <random>
 #include <set>
-#include <sstream>
+
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -134,10 +134,11 @@ void executionPolicy(Policy policy)
 
 int wmain(int argc, wchar_t* argv[])
 {
-	Test::mazeBFS();
+	Test::trieLCRS();
+	//Test::simpleList();
+	//Test::list();
+		return 0;
 
-	return 0;
-	
 	
 	
 	{
@@ -205,37 +206,7 @@ int wmain(int argc, wchar_t* argv[])
 	auto b = bind(&A::bar, placeholders::_2, 5);
 	B xx;
 	b(1, xx, 1, 2,1);
-	
-	Trie<string> trie;
-	for (string s : {"how do you do", "how do you", "how do they", "how does he", "how do"})
-	{
-		istringstream iss(s);
-		trie.insert(istream_iterator<string>(iss), istream_iterator<string>());
-	}
-	
-	string sdata;
-	//do
-	//{
-		sdata.clear();
-		ostringstream os(sdata);
-
-		getline(cin, sdata);
-		//std::copy(istream_iterator<string>(cin), istream_iterator<string>(), ostream_iterator<string>(os, " "));
-
-		istringstream is(sdata);
-		if (auto sub = trie.subtrie(istream_iterator<string>(is), istream_iterator<string>()))
-			sub->get().print();
-	//} while (!sdata.empty());
-			
-	for (string s : {"how do", "how do you do", "how do", "how do they", "how do you", "how does he"})
-	{
-		trie.print();
-		std::cout << "------------------------------------\n";
-
-		istringstream iss(s);
-		trie.remove(istream_iterator<string>(iss), istream_iterator<string>());
-	}
-	
+		
 	
 	const size_t n = 4;
 	uint8_t m[4][4]{ {1,0,0,0}, {0,0,1,0}, {1,0,1,0}, {0,1,0,0}};

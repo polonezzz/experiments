@@ -170,6 +170,7 @@
     <ClInclude Include="targetver.h" />
     <ClInclude Include="test.h" />
     <ClInclude Include="trie.h" />
+    <ClInclude Include="trieLCRS.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="algo.cpp" />

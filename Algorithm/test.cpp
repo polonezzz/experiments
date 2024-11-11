@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <set>
+#include <sstream>
 #include <tuple>
 
 namespace Test
@@ -138,6 +139,21 @@ namespace Test
 		l.print();
 	}
 
+	void simpleList()
+	{
+		SimpleList<int16_t> l;
+
+		auto l2 = l;
+		l.Push(1);
+		l2 = l;
+
+		SimpleList<int16_t> l3{ 1, 2, 3, 5, 7, 9, 9, 9 };
+		l2 = std::move(l3);
+		l = l;
+		l = l2;
+
+	}
+
 	void graph()
 	{
 
@@ -175,7 +191,7 @@ namespace Test
 	void mazeBFS()
 	{
 		// https://github.com/btholt/algorithms-exercises/blob/main/specs/pathfinding/pathfinding.test.js
-		
+
 		std::vector<std::vector<int>> map =
 		{
 				{0, 0, 1, 0, 1, 0, 0, 0},
@@ -198,7 +214,7 @@ namespace Test
 		{
 			for (size_t j = 0; j < dim; ++j)
 			{
-				if (map[i][j] == 1)	
+				if (map[i][j] == 1)
 					continue;
 
 				Vertex v = i * dim + j;
@@ -302,4 +318,74 @@ namespace Test
 		ggg.remove({ 0, 1 });
 
 	}
+
+	void trie()
+	{
+		Trie<string> trie;
+		for (string s : {"how do you do", "how do you", "how do they", "how does he", "how do"})
+		{
+			istringstream iss(s);
+			trie.insert(istream_iterator<string>(iss), istream_iterator<string>());
+		}
+
+		string sdata;
+		sdata.clear();
+		ostringstream os(sdata);
+
+		getline(cin, sdata);
+		//std::copy(istream_iterator<string>(cin), istream_iterator<string>(), ostream_iterator<string>(os, " "));
+
+		istringstream is(sdata);
+		if (auto sub = trie.subtrie(istream_iterator<string>(is), istream_iterator<string>()))
+			sub->get().print();
+		//} while (!sdata.empty());
+
+		for (string s : {"how do", "how do you do", "how do", "how do they", "how do you", "how does he"})
+		{
+			trie.print();
+			std::cout << "------------------------------------\n";
+
+			istringstream iss(s);
+			trie.remove(istream_iterator<string>(iss), istream_iterator<string>());
+		}
+
+	}
+
+	void trieLCRS()
+	{
+		LCRSTrie<string> trie;
+		vector<string> data{ "how do", "how do you do", "how do", "how do they", "how do you", "how does he" };
+
+		for (const string& s : data)
+		{
+			istringstream iss(s);
+			trie.insert(istream_iterator<string>(iss), istream_iterator<string>());
+		}
+
+		for (const string& s : { "how do", "how does", "how are", "have you ever", "" })
+		{
+			istringstream iss(s);
+
+			auto data = trie.complete(istream_iterator<string>(iss), istream_iterator<string>());
+
+			for (auto& slist : data)
+			{
+				std::cout << s;
+
+				while (!slist.Empty())
+					std::cout << " " << slist.Pop();
+
+				std::cout << std::endl;
+			}
+
+			std::cout << std::endl;
+		}
+
+		for (auto rit = rbegin(data); rit != rend(data); ++rit)
+		{
+			istringstream iss(*rit);
+			trie.remove(istream_iterator<string>(iss), istream_iterator<string>());
+		}
+	}
+
 }

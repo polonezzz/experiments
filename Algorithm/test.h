@@ -6,6 +6,8 @@
 #include "heap.h"
 #include "list.h"
 #include "sorting.h"
+#include "trie.h"
+#include "trieLCRS.h"
 
 #include <random>
 
@@ -16,11 +18,18 @@ namespace Test
 	void graph();
 	void mazeBFS();
 	void directedGraph();
+
 	void list();
+	void simpleList();
+	
 	void sorting();
 	
 	void heapsort();
 	void heapSTL();
+
+	void trie();
+	void trieLCRS();
+
 }
 
 template <typename Cont>
