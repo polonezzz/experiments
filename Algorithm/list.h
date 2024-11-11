@@ -1,8 +1,9 @@
 #pragma once
 
-#include <initializer_list>
 #include <exception>
+#include <initializer_list>
 #include <iostream>
+#include <iterator>
 #include <string>
 
 
@@ -39,6 +40,9 @@ public:
 	
 	ForwardList& operator=(const ForwardList& other)
 	{
+		if (&fakeHead == &other.fakeHead)
+			return *this;
+
 		auto temp = other;
 		std::swap(fakeHead, temp.fakeHead);
 		return *this;
@@ -46,12 +50,15 @@ public:
 
 	ForwardList(ForwardList&& other) noexcept
 	{
-		fakeHead = other.fakeHead;
-		other.head = nullptr;
+		std::swap(fakeHead, other.fakeHead);
+		//other.head = nullptr;
 	}
 	
 	ForwardList& operator=(ForwardList&& other) noexcept
 	{
+		if (&fakeHead == &other.fakeHead)
+			return *this;
+
 		auto temp = std::move(other);
 		std::swap(fakeHead, temp.fakeHead);
 		return *this;
@@ -387,6 +394,13 @@ class SimpleList
 	size_t length = 0;
 
 public:
+	
+	SimpleList() = default;
+
+	SimpleList(const std::initializer_list<T>& args)
+		: SimpleList(std::begin(args), std::end(args))
+	{}
+
 	template<typename It>
 	SimpleList(It begin, It end)
 	{
@@ -405,6 +419,57 @@ public:
 			pHead = pHead->next;
 			delete pTemp;
 		}
+	}
+
+	SimpleList(const SimpleList& other)
+	{
+		Node* src = other.pHead;
+
+		if (src)
+		{
+			pHead = new Node;
+			pHead->data = src->data;
+
+			Node* dst = pHead;
+
+			while (src = src->next)
+			{
+				dst->next = new Node;
+				dst = dst->next;
+				dst->data = src->data;
+			}
+
+			length = other.length;
+		}
+	}
+
+	SimpleList& operator=(const SimpleList & other)
+	{
+		if (pHead == other.pHead)
+			return *this;
+
+		auto temp = other;
+		std::swap(pHead, temp.pHead);
+		std::swap(length, temp.length);
+		
+		return *this;
+	}
+
+	SimpleList(SimpleList&& other) noexcept
+	{
+		std::swap(pHead, other.pHead);
+		std::swap(length, other.length);
+	}
+
+	SimpleList& operator=(SimpleList&& other) noexcept
+	{
+		if (pHead == other.pHead)
+			return *this;
+
+		std::swap(pHead, other.pHead);
+		std::swap(length, other.length);
+		
+		return *this;
 	}
 
 	bool Empty() const
